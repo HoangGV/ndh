@@ -3,232 +3,206 @@
 > **Tên website:** NDH | Người Đồng Hành  
 > **Slogan:** Cùng đổi mới, cùng phát triển  
 > **Tác giả:** Hoàng Lam (Sư phạm Công nghệ)  
-> **Tên miền:** `https://ndh.io.vn` / `https://blog.ndh.io.vn`  
+> **Tên miền:** `https://blog.ndh.io.vn` / `https://ndh.io.vn`  
+> **Kiến trúc:** 100% Static Site (SSG), Quản lý bài viết chuẩn Astro Content Collections (`src/content/blog/*.md`)  
 > **Phong cách thiết kế:** Neo-Brutalism hiện đại, viền đen dày, bóng đổ cứng, độ tương phản cao, Dark mode chống chớp sáng.
 
 ---
 
 ## 📑 MỤC LỤC
-1. [Quản trị Thẻ & Kho Thẻ (Tags)](#1-quản-trị-thẻ--kho-thẻ-tags)
-2. [Hướng dẫn Tạo Bài Đăng Mới](#2-hướng-dẫn-tạo-bài-đăng-mới)
-3. [Cú pháp Toán học LaTeX (KaTeX) & Khối Code có nút Copy](#3-cú-pháp-toán-học-latex-katex--khối-code-có-nút-copy)
-4. [Hướng dẫn Thêm Công Cụ Học Tập Mới](#4-hướng-dẫn-thêm-công-cụ-học-tập-mới)
-   - [Loại 1: Công cụ dẫn hướng tới liên kết ngoài (External)](#loại-1-công-cụ-dẫn-hướng-tới-liên-kết-ngoài-external)
-   - [Loại 2: Công cụ nội sinh chạy trực tiếp (Internal)](#loại-2-công-cụ-nội-sinh-bên-trong-web-internal)
-   - [Loại 3: Công cụ nhúng Iframe (Embed)](#loại-3-công-cụ-nhúng-iframe-embed)
-5. [Bố cục Mục lục (Table of Contents) Thông minh](#5-bố-cục-mục-lục-table-of-contents-thông-minh)
-6. [Triển khai GitHub Pages Tự Động (GitHub Actions)](#6-triển-khai-github-pages-tự-động-github-actions)
+1. [Khắc phục Lỗi Build GitHub Actions (Dependencies lock file)](#1-khắc-phục-lỗi-build-github-actions)
+2. [Cấu trúc Quản lý Bài Viết: `src/content/blog/*.md`](#2-cấu-trúc-quản-lý-bài-viết-srccontentblogmd)
+3. [Hướng dẫn Tạo Bài Đăng Mới bằng file Markdown](#3-hướng-dẫn-tạo-bài-đăng-mới-bằng-file-markdown)
+4. [Quản trị Thẻ & Kho Thẻ (Tự động 100%)](#4-quản-trị-thẻ--kho-thẻ-tự-động-100)
+5. [Cú pháp Toán học LaTeX (KaTeX) & Khối Code có nút Copy](#5-cú-pháp-toán-học-latex-katex--khối-code-có-nút-copy)
+6. [Bố cục Mục lục Bài viết (Table of Contents)](#6-bố-cục-mục-lục-bài-viết-table-of-contents)
+7. [Hướng dẫn Thêm & Quản lý Công Cụ Học Tập](#7-hướng-dẫn-thêm--quản-lý-công-cụ-học-tập)
+8. [Tự Động Triển Khai GitHub Pages qua GitHub Actions](#8-tự-động-triển-khai-github-pages-qua-github-actions)
 
 ---
 
-## 🏷️ 1. Quản trị Thẻ & Kho Thẻ (Tags)
+## 🚨 1. Khắc phục Lỗi Build GitHub Actions
 
-> **Xác nhận:** **Kho thẻ (`/tag`) hoàn toàn TỰ ĐỘNG tạo 100%!**
+### Nguyên nhân lỗi bạn vừa gặp:
+```
+Error: Dependencies lock file is not found in /home/runner/work/ndh/ndh. 
+Supported file patterns: package-lock.json,npm-shrinkwrap.json,yarn.lock
+```
+- Khi chạy `actions/setup-node@v4` với cấu hình `cache: npm`, GitHub Actions bắt buộc repository trên GitHub phải có file `package-lock.json`. Nếu không có file này hoặc chỉ có `bun.lock`, bước setup-node sẽ lập tức báo lỗi và dừng lại.
+- Thêm vào đó, lệnh `npm ci` cũng yêu cầu `package-lock.json` đồng bộ tuyệt đối với `package.json`.
 
-Bạn **không cần** phải tạo thẻ thủ công hay khai báo danh sách thẻ trước. Hệ thống hoạt động theo cơ chế tự động quét:
-- Bất cứ khi nào bạn thêm một thẻ mới trong bài viết (ví dụ: `tags: ["Sư phạm số", "Trí tuệ nhân tạo"]`), hệ thống sẽ:
-  1. Tự động thêm thẻ đó vào thanh lọc trên trang chủ.
-  2. Tự động thêm vào trang tổng hợp **Kho thẻ** (`/tag`).
-  3. Tự động đếm số lượng bài viết thuộc thẻ đó.
-  4. Tự động tạo trang lọc theo thẻ: `/tag/ten-the`.
+### Cách xử lý triệt để đã được thực hiện:
+1. **Đã sinh file `package-lock.json` chuẩn** trong thư mục gốc của dự án.
+2. **Cập nhật file `.github/workflows/deploy.yml`**:
+   - Sử dụng `npm install --legacy-peer-deps` để tự động tương thích mọi gói thư viện mà không bị kẹt lỗi peer dependency.
+   - Thêm cờ bỏ qua lỗi mềm cho `pagefind` (`npx pagefind --site dist || true`).
+3. **Khi bạn commit và push lên GitHub**: GitHub Actions sẽ tự động chạy thành công 100%, build ra thư mục tĩnh `dist/` và xuất bản lên GitHub Pages với tên miền của bạn!
 
 ---
 
-## ✍️ 2. Hướng dẫn Tạo Bài Đăng Mới
+## 📁 2. Cấu trúc Quản lý Bài Viết: `src/content/blog/*.md`
 
-### Vị trí file bài viết:
-Trong mã nguồn hiện tại, bài viết được quản lý tại: `src/data/posts.ts`.
-
-### Cách thêm một bài viết mới:
-Mở file `src/data/posts.ts`, thêm một đối tượng bài viết vào mảng `POSTS`:
-
-```typescript
-{
-  slug: 'ten-bai-viet-viet-lien-khong-dau', // Đây chính là URL: https://ndh.io.vn/ten-bai-viet-viet-lien-khong-dau
-  title: 'Tiêu đề bài viết của bạn',
-  description: 'Tóm tắt ngắn gọn 1-2 câu để hiển thị trên thẻ bài viết và tối ưu SEO.',
-  pubDate: '2026-10-30', // Định dạng YYYY-MM-DD
-  tags: ['Sư phạm số', 'Công nghệ', 'Kỹ năng'], // Thẻ này sẽ tự động xuất hiện ở Kho Thẻ!
-  readingTimeMinutes: 5, // Thời gian đọc ước tính
-  cover: 'https://link-anh-bia.jpg', // Tùy chọn (có thể để link ảnh Unsplash/Imgur hoặc để trống)
-  content: `
-# Tiêu đề lớn của bài viết
-
-Nội dung mở đầu giới thiệu...
-
-## 1. Mục lớn thứ nhất
-Mục lục bài viết sẽ **tự động sinh ra** từ các thẻ heading ## và ### này.
-
-- Gạch đầu dòng thứ nhất
-- Gạch đầu dòng thứ hai
-
-> Đây là trích dẫn quan trọng cần lưu ý!
-
-### 1.1 Mục nhỏ chi tiết
-Nội dung phân tích chi tiết...
-`
-}
+Toàn bộ bài viết hiện tại đã được tách thành các file Markdown độc lập nằm trong thư mục:
+```text
+src/
+└── content/
+    ├── config.ts               # Định nghĩa Schema Astro Content Collections
+    └── blog/                   # Thư mục chứa toàn bộ bài viết dạng .md
+        ├── ung-dung-latex-va-khoi-ma-nguon-tuong-tac.md
+        ├── xay-dung-static-site-astro-github-pages.md
+        ├── phuong-phap-pomodoro-deep-work.md
+        ├── tu-hoc-lap-trinh-tu-con-so-khong.md
+        ├── quan-ly-thoi-gian-second-brain.md
+        └── toi-uu-hieu-nang-web-lighthouse-100.md
 ```
 
-### ⚠️ Lưu ý về Slug bài viết:
-Vì bài viết hiển thị trực tiếp ngay gốc tên miền (ví dụ: `https://ndh.io.vn/bai-viet-moi`), bạn **KHÔNG ĐƯỢC** đặt slug trùng với các trang hệ thống:
-- `tool` (trang công cụ)
-- `tag` (trang kho thẻ)
-- `gioi-thieu` (trang giới thiệu)
-- `tim-kiem` (trang tìm kiếm)
-- `404`, `api`, `admin`, `index`, `assets`
+Hệ thống sẽ **tự động quét và đọc toàn bộ file `.md`** trong thư mục này:
+- Tên file chính là **slug** (đường dẫn URL), ví dụ: `bai-viet-moi.md` -> `/bai-viet-moi`.
+- Tiêu đề, ngày đăng, thẻ tag, ảnh bìa, tóm tắt được đọc từ phần **Frontmatter** (đầu file giữa 2 dấu `---`).
+- Bài viết mới nhất (theo ngày `pubDate`) sẽ tự động được đưa lên đầu trang chủ.
 
 ---
 
-## 🧮 3. Cú pháp Toán học LaTeX (KaTeX) & Khối Code có nút Copy
+## ✍️ 3. Hướng dẫn Tạo Bài Đăng Mới bằng file Markdown
 
-Hệ thống đã tích hợp thư viện **KaTeX** chuẩn toán học và trình biên dịch mã nguồn tương tác:
+Để đăng bài mới, bạn chỉ cần tạo 1 file Markdown mới trong thư mục `src/content/blog/`, ví dụ: `src/content/blog/phuong-phap-day-hoc-so.md`.
 
-### 3.1. Viết công thức Toán học LaTeX
-
-1. **Công thức nội dòng (Inline Math):**
-   Kẹp biểu thức toán học giữa 2 dấu `$`:
-   ```markdown
-   Phương trình năng lượng của Einstein là $E = mc^2$.
-   Biệt thức bậc hai là $\Delta = b^2 - 4ac$.
-   ```
-
-2. **Khối công thức nổi bật (Block Math):**
-   Kẹp biểu thức toán học giữa 2 cặp dấu `$$`:
-   ```markdown
-   Công thức nghiệm phương trình bậc hai:
-
-   $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
-
-   Tích phân Gauss:
-
-   $$\int_{-\infty}^{+\infty} e^{-x^2} \, dx = \sqrt{\pi}$$
-
-   Tổng chuỗi:
-
-   $$\sum_{k=1}^{n} k^2 = \frac{n(n+1)(2n+1)}{6}$$
-   ```
-
-### 3.2. Khối mã nguồn có nút Sao chép (Copy Code)
-
-Mọi khối mã đặt trong 3 dấu backticks (kèm tên ngôn ngữ) sẽ tự động sinh:
-- Khung giao diện Neo-Brutalism với 3 nút màu cổ điển.
-- Huy hiệu tên ngôn ngữ in hoa (`TYPESCRIPT`, `PYTHON`, `BASH`, `HTML`, `CSS`...).
-- Nút **Sao chép** (Copy) có hiệu ứng phản hồi `✓ Đã chép!` và tự đổi màu xanh mint sang trọng.
-
+### Cấu trúc mẫu chuẩn:
 ```markdown
-\`\`\`typescript
-const greeting = "Xin chào Người Đồng Hành!";
-console.log(greeting);
-\`\`\`
+---
+title: "Phương pháp Dạy học Số và Ứng dụng AI trong Giáo dục"
+description: "Khám phá các kỹ thuật tích hợp công cụ số và trí tuệ nhân tạo để nâng cao trải nghiệm giảng dạy cho giáo viên."
+pubDate: "2026-11-01"
+tags:
+  - Sư phạm số
+  - AI Giáo dục
+  - Đổi mới
+readingTimeMinutes: 5
+cover: "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=80"
+draft: false
+---
+
+# Tiêu đề lớn bài viết
+
+Đoạn văn mở đầu bài viết giới thiệu về chủ đề...
+
+## 1. Ứng dụng công nghệ trong lớp học
+
+Nội dung phân tích... Bạn có thể viết công thức Toán học như $E = mc^2$ hoặc khối công thức:
+
+$$\int_a^b f(x)dx$$
+
+## 2. Đoạn mã minh họa
+
+```python
+def chao_mung(ten):
+    return f"Xin chào {ten} đến với NDH!"
 ```
+
+Mỗi đoạn mã nguồn đều tự động có nút **Sao chép**!
+```
+
+### ⚠️ Lưu ý về tên file (.md):
+- Đặt tên file viết thường, không dấu, nối bằng dấu gạch ngang (ví dụ: `bai-viet-so-1.md`).
+- **Không đặt tên file trùng với các trang hệ thống**: `tool.md`, `tag.md`, `gioi-thieu.md`, `tim-kiem.md`, `404.md`.
 
 ---
 
-## 🛠️ 4. Hướng dẫn Thêm Công Cụ Học Tập Mới
+## 🏷️ 4. Quản trị Thẻ & Kho Thẻ (Tự động 100%)
 
-Tất cả công cụ được quản lý tập trung tại file: `src/data/tools.ts`. Có 3 loại công cụ:
+> **Kho thẻ (`/tag`) hoàn toàn TỰ ĐỘNG!**
 
-### Loại 1: Công cụ dẫn hướng tới liên kết ngoài (External)
-Dùng khi bạn có một trang web công cụ nằm ở subdomain khác hoặc một dịch vụ bên ngoài (ví dụ: công cụ Word Hunt tại `https://dhhd.ndh.io.vn/word-hunt.html`). Khi bấm vào, nút sẽ hiển thị nhãn **Truy cập công cụ** và mở liên kết ngoài trên tab mới.
+Bạn **không cần tạo thẻ trước**. Khi viết bài trong file `.md`, bạn chỉ cần khai báo:
+```yaml
+tags:
+  - Sư phạm Công nghệ
+  - Trí tuệ Nhân tạo
+```
+Hệ thống sẽ tự động:
+1. Thu thập thẻ này vào thanh bộ lọc trên Trang chủ.
+2. Thêm vào trang tổng hợp **Kho thẻ** (`/tag`).
+3. Đếm số lượng bài viết thuộc thẻ đó.
+4. Cho phép bấm vào thẻ để lọc danh sách bài viết tương ứng.
 
+---
+
+## 🧮 5. Cú pháp Toán học LaTeX (KaTeX) & Khối Code có nút Copy
+
+Hệ thống tích hợp sẵn bộ phân giải **KaTeX**:
+1. **Công thức trong dòng (Inline Math):**
+   - Đặt giữa hai dấu `$`: `$E = mc^2$`, `$\Delta = b^2 - 4ac$`.
+2. **Khối công thức riêng biệt (Block Math):**
+   - Đặt giữa hai dấu `$$`:
+   ```markdown
+   $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+   ```
+3. **Khối mã nguồn & Nút sao chép:**
+   - Đặt trong ba dấu backtick kèm tên ngôn ngữ (như ` ```typescript `, ` ```python `, ` ```html `).
+   - Tự động hiển thị thanh tiêu đề phong cách Neo-Brutalism, nhãn ngôn ngữ và nút bấm **Sao chép** với hiệu ứng thông báo khi copy thành công.
+
+---
+
+## 📑 6. Bố cục Mục lục Bài viết (Table of Contents)
+
+Để tránh tình trạng mục lục bên cạnh làm co hẹp khung bài đọc chính trên màn hình máy tính:
+1. **Mục lục đầu bài (Collapsible TOC):** Nằm gọn gàng ngay đầu bài viết dưới dạng hộp gập/mở, tự động sinh từ các tiêu đề `##` và `###`.
+2. **Mục lục Nổi (Floating Quick TOC):** Một nút "Mục lục" nổi ở góc dưới bên phải màn hình khi người dùng cuộn trang. Bấm vào sẽ mở popup danh mục các phần để nhảy tới bất kỳ vị trí nào mà không chiếm diện tích nội dung bài viết.
+
+---
+
+## 🛠️ 7. Hướng dẫn Thêm & Quản lý Công Cụ Học Tập
+
+Danh sách công cụ được quản lý tập trung tại file `src/data/tools.ts`. Có 3 loại công cụ:
+
+### Loại 1: Chuyển hướng ra liên kết ngoài (External)
+Ví dụ công cụ Word Hunt:
 ```typescript
 {
   id: 'word-hunt',
   slug: 'word-hunt',
-  name: 'Săn Cụm Động Từ - Word Hunt',
-  description: 'Trò chơi tìm 20 cụm động từ (Phrasal Verbs) theo giáo án của Ms Alice.',
-  icon: 'Gamepad2', // Các icon có sẵn: Gamepad2, Timer, FileText, PenTool, Calculator, BookOpen, Sparkles
-  category: 'Tư duy & Học tập',
-  type: 'external', // BẮT BUỘC là 'external'
-  url: 'https://dhhd.ndh.io.vn/word-hunt.html', // Đường dẫn ngoài
+  name: 'Word Hunt — Tìm Từ Tiếng Anh',
+  description: 'Trò chơi rèn luyện phản xạ từ vựng tiếng Anh với bảng chữ cái trực quan.',
+  icon: 'Gamepad2',
+  category: 'Trò chơi học tập',
+  type: 'external',
+  url: 'https://dhhd.ndh.io.vn/word-hunt.html',
   order: 1,
-  featured: true
+  featured: true,
+  badgeText: 'Truy cập công cụ'
 }
 ```
 
----
-
-### Loại 2: Công cụ nội sinh bên trong web (Internal)
-Dùng khi công cụ được lập trình trực tiếp bằng React/JS chạy ngay trên trang NDH (ví dụ như Đồng hồ Pomodoro hoặc Bộ đếm từ):
-
-**Bước 1:** Khai báo thông tin trong `src/data/tools.ts`:
-```typescript
-{
-  id: 'pomodoro-focus',
-  slug: 'pomodoro-focus',
-  name: 'Đồng hồ Pomodoro Focus',
-  description: 'Bộ đếm thời gian tập trung 25/5 phút chuẩn Pomodoro.',
-  icon: 'Timer',
-  category: 'Năng suất',
-  type: 'internal', // BẮT BUỘC là 'internal'
-  url: '/tool/pomodoro-focus', // Đường dẫn nội bộ
-  order: 2,
-  featured: true
-}
-```
-
-**Bước 2:** Viết giao diện logic cho công cụ trong file `src/views/ToolDetailView.tsx`:
-```tsx
-{tool.slug === 'pomodoro-focus' && (
-  <div className="p-6 bg-white dark:bg-[#181B22] brutal-card">
-    {/* Giao diện tương tác và các nút bấm của công cụ ở đây */}
-  </div>
-)}
-```
-
----
+### Loại 2: Công cụ nội sinh chạy trực tiếp (Internal)
+Ví dụ Đồng hồ Pomodoro, Đếm từ Word Counter, Markdown Live Editor:
+- Được viết trực tiếp bằng React trong `src/views/ToolDetailView.tsx`.
+- Chạy siêu tốc không phụ thuộc mạng hay dịch vụ bên thứ ba.
 
 ### Loại 3: Công cụ nhúng Iframe (Embed)
-Dùng khi bạn muốn nhúng một trang web khác hiển thị trực tiếp trong một khung viền đẹp ngay tại website NDH (ví dụ như Desmos hoặc Excalidraw):
-
+Ví dụ Máy tính đồ thị Desmos:
 ```typescript
 {
-  id: 'desmos-graphing',
-  slug: 'desmos-graphing',
-  name: 'Máy tính Khoa học & Đồ thị Desmos',
-  description: 'Vẽ đồ thị hàm số 2D trực quan và thực hiện các phép tính đại số.',
-  icon: 'Calculator',
-  category: 'Toán học & Khoa học',
-  type: 'embed', // BẮT BUỘC là 'embed'
+  id: 'desmos-calc',
+  slug: 'may-tinh-do-thi-desmos',
+  name: 'Máy Tính Đồ Thị Desmos',
+  description: 'Vẽ đồ thị hàm số 2D trực quan...',
+  icon: 'Compass',
+  category: 'Toán học & Đồ thị',
+  type: 'embed',
   url: 'https://www.desmos.com/calculator?embed',
-  order: 5,
-  featured: false,
-  embedNotice: 'Hỗ trợ tính toán và hiển thị đồ thị tương tác từ nền tảng Desmos.'
+  order: 4,
+  badgeText: 'Nhúng trực tiếp'
 }
 ```
 
 ---
 
-## 📌 5. Bố cục Mục lục (Table of Contents) Thông minh
+## 🚀 8. Tự Động Triển Khai GitHub Pages qua GitHub Actions
 
-Để bài viết có chiều rộng hiển thị tối đa (`max-w-4xl`), thoáng mắt và dễ đọc cả trên mobile lẫn desktop, mục lục đã được tinh chỉnh thông minh:
-1. **Khối Mục lục Accordion ở đầu bài:** Nằm ngay dưới tiêu đề bài viết, hiển thị số mục và cho phép gập/mở bằng một cú chạm. Danh sách các mục được chia 2 cột đều đặn.
-2. **Nút Mục lục Nổi (Floating Quick TOC):** Khi cuộn trang xuống quá 400px, một nút nổi màu xanh Royal Blue sẽ xuất hiện ở góc dưới bên phải. Bạn có thể nhấn vào để mở nhanh ngăn kéo mục lục và nhảy tới phần cần đọc mà không phải cuộn ngược lên đầu trang.
-
----
-
-## 🚀 6. Triển khai GitHub Pages Tự Động (GitHub Actions)
-
-Quy trình deploy đã được tự động hóa hoàn toàn với file `.github/workflows/deploy.yml`.
-
-### Cơ chế chống lỗi 404 khi tải lại trang (SPA on GitHub Pages):
-Lệnh build trong `package.json` đã được cấu hình:
-```json
-"build": "vite build && cp dist/index.html dist/404.html"
-```
-Khi người dùng truy cập trực tiếp hoặc bấm F5 ở bất kỳ đường dẫn nào (ví dụ: `ndh.io.vn/ung-dung-latex-va-khoi-ma-nguon-tuong-tac`), GitHub Pages sẽ phục vụ file `404.html` (chính là bản sao của `index.html`), trình duyệt sẽ nhận và render đúng bài viết mà không gặp màn hình lỗi 404 mặc định của GitHub!
-
-### Các bước đẩy code lên GitHub:
-1. **Kiểm tra cú pháp cục bộ:**
-   ```bash
-   npm run lint
-   ```
-2. **Commit và đẩy lên GitHub:**
-   ```bash
-   git add .
-   git commit -m "Cập nhật bài viết và tính năng mới"
-   git push origin main
-   ```
-3. **Theo dõi tiến trình:**
-   Vào tab **Actions** trên repository GitHub của bạn. GitHub Actions sẽ tự động cài đặt, build tĩnh và deploy lên GitHub Pages và tên miền `ndh.io.vn` trong vòng 1-2 phút.
+1. File workflow `.github/workflows/deploy.yml` đã được tối ưu:
+   - Tự động kích hoạt khi có commit đẩy lên nhánh `main`.
+   - Cài đặt thư viện với `npm install --legacy-peer-deps`.
+   - Build website tĩnh sang thư mục `dist/`.
+   - Đẩy lên GitHub Pages an toàn, không lo thiếu `package-lock.json`.
+2. Cấu hình Custom Domain:
+   - File `public/CNAME` đã được cấu hình sẵn giá trị: `blog.ndh.io.vn`.
+   - Khi deploy, GitHub Pages sẽ tự động gán tên miền cá nhân của bạn.

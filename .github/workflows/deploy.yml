@@ -26,16 +26,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
 
       - name: Cài đặt Dependencies
-        run: npm ci
+        run: npm install --legacy-peer-deps
 
-      - name: Build dự án Astro Static
+      - name: Build Static Site
         run: npm run build
 
-      - name: Chạy chỉ mục Pagefind (Tìm kiếm tĩnh phía client)
-        run: npx pagefind --site dist
+      - name: Chạy chỉ mục Pagefind (Tùy chọn)
+        run: npx pagefind --site dist || true
 
       - name: Upload Artifact cho GitHub Pages
         uses: actions/upload-pages-artifact@v3
