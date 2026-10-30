@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --color-primary: #4169E1;
+    --color-yellow: #FFD93D;
+    --color-pink: #FF6B9D;
+    --color-mint: #4ADE80;
+    --color-orange: #FF9F43;
+    --color-ink: #111111;
+  }
+
+  body {
+    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  code, pre {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Neo-Brutalism Shadows & Animations */
+.brutal-border {
+  border: 2.5px solid #111111;
+}
+.dark .brutal-border {
+  border: 2.5px solid #E2E8F0;
+}
+
+.brutal-card {
+  border: 2.5px solid #111111;
+  box-shadow: 4px 4px 0px #111111;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dark .brutal-card {
+  border: 2.5px solid #E2E8F0;
+  box-shadow: 4px 4px 0px #60A5FA;
+}
+
+.brutal-card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #111111;
+}
+.dark .brutal-card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #93C5FD;
+}
+
+.brutal-btn {
+  border: 2.5px solid #111111;
+  box-shadow: 3px 3px 0px #111111;
+  font-weight: 700;
+  transition: all 0.12s ease-in-out;
+}
+.dark .brutal-btn {
+  border: 2.5px solid #E2E8F0;
+  box-shadow: 3px 3px 0px #60A5FA;
+}
+
+.brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #111111;
+}
+.dark .brutal-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #93C5FD;
+}
+
+.brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #111111;
+}
+.dark .brutal-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #60A5FA;
+}
+
+.brutal-tag {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  border: 2px solid #111111;
+  box-shadow: 2px 2px 0px #111111;
+}
+.dark .brutal-tag {
+  border: 2px solid #E2E8F0;
+  box-shadow: 2px 2px 0px #60A5FA;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F1E8;
+  border-left: 2px solid #111111;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #181B22;
+  border-left: 2px solid #334155;
+}
+::-webkit-scrollbar-thumb {
+  background: #4169E1;
+  border: 2px solid #111111;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #60A5FA;
+  border: 2px solid #E2E8F0;
+}

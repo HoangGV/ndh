@@ -1,0 +1,6 @@
+{
+  "name": "NDH | Người Đồng Hành",
+  "description": "Cùng Người Đồng Hành tìm hiểu những phương pháp, kĩ thuật dạy học hiện đại và xây dựng các công cụ học tập số",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
