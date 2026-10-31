@@ -39,7 +39,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Bài viết mới nhất
+                  → Bài viết mới
                 </button>
               </li>
               <li>
@@ -47,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/tool')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Công cụ (Săn chữ, Pomodoro, Đếm từ)
+                  → Công cụ
                 </button>
               </li>
               <li>
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/tag')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Tags (Chủ đề bài viết)
+                  → Tags
                 </button>
               </li>
               <li>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/gioi-thieu')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Giới thiệu & Tác giả Hoàng Lam
+                  → Giới thiệu
                 </button>
               </li>
             </ul>
