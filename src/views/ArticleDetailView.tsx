@@ -139,6 +139,18 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
           return `<h3 id="${id}" class="text-lg font-bold mt-6 mb-2 text-[#111111] dark:text-gray-100">${text}</h3>`;
         }
         return `<h${level} id="${id}" class="font-bold my-4">${text}</h${level}>`;
+      },
+      table(arg: any, bodyArg?: string) {
+        const header = typeof arg === 'string' ? arg : (arg?.header || '');
+        const body = typeof arg === 'string' ? (bodyArg || '') : (arg?.rows || arg?.body || '');
+        return `
+          <div class="table-responsive-wrapper my-6 overflow-x-auto max-w-full brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA]">
+            <table class="w-full min-w-[360px] border-collapse bg-white dark:bg-[#151922] text-xs sm:text-sm">
+              ${header}
+              ${body}
+            </table>
+          </div>
+        `;
       }
     }
   });
@@ -152,7 +164,6 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   onNavigate,
 }) => {
   const [copiedShare, setCopiedShare] = useState(false);
-  const [tocExpanded, setTocExpanded] = useState(true);
   const [showFloatingToc, setShowFloatingToc] = useState(false);
   const [hasScrolled, setHasScrolled] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -254,15 +265,16 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   };
 
   return (
-    <article className="max-w-4xl mx-auto space-y-8">
+    <article className="max-w-4xl mx-auto space-y-6 sm:space-y-8 w-full max-w-full overflow-hidden">
       {/* Back to Home Button & Share Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           onClick={() => onNavigate('/')}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white dark:bg-[#181B22] brutal-border shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] hover:bg-[#FFD93D] hover:text-black transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Về danh sách bài viết</span>
+          <span className="hidden sm:inline">Về danh sách bài viết</span>
+          <span className="sm:hidden">Bài viết</span>
         </button>
 
         <button
@@ -270,12 +282,12 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#FFD93D] text-black brutal-border shadow-[2px_2px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
         >
           {copiedShare ? <Check className="w-4 h-4 text-green-700" /> : <Share2 className="w-4 h-4" />}
-          <span>{copiedShare ? 'Đã sao chép link!' : 'Chia sẻ bài viết'}</span>
+          <span>{copiedShare ? 'Đã sao chép link!' : 'Chia sẻ'}</span>
         </button>
       </div>
 
       {/* Header Container */}
-      <header className="p-6 sm:p-8 bg-white dark:bg-[#181B22] brutal-card space-y-4">
+      <header className="p-4 sm:p-8 bg-white dark:bg-[#181B22] brutal-card space-y-4">
         <div className="flex flex-wrap gap-2">
           {post.tags.map((t) => (
             <TagBadge key={t} tag={t} onClick={() => onNavigate(`/tag/${t}`)} />
@@ -290,80 +302,26 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
           {post.description}
         </p>
 
-        <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-500 dark:text-gray-400 pt-3 border-t border-black/10 dark:border-white/10">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-bold text-gray-500 dark:text-gray-400 pt-3 border-t border-black/10 dark:border-white/10">
           <span className="flex items-center gap-1.5 text-black dark:text-white">
             <User className="w-3.5 h-3.5 text-[#4169E1] dark:text-[#60A5FA]" />
             <span>Tác giả: Hoàng Lam</span>
           </span>
-          <span>·</span>
+          <span className="hidden sm:inline">·</span>
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5" />
-            <span>Ngày đăng: {post.pubDate}</span>
+            <span>{post.pubDate}</span>
           </span>
-          <span>·</span>
+          <span className="hidden sm:inline">·</span>
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
-            <span>Thời lượng đọc: ~{post.readingTimeMinutes} phút</span>
+            <span>~{post.readingTimeMinutes} phút đọc</span>
           </span>
         </div>
       </header>
 
-      {/* RE-POSITIONED TABLE OF CONTENTS: Inline Accordion at the top of the article */}
-      {toc.length > 0 && (
-        <section className="bg-white dark:bg-[#181B22] brutal-card overflow-hidden">
-          <div
-            onClick={() => setTocExpanded(!tocExpanded)}
-            className="flex items-center justify-between p-4 cursor-pointer bg-blue-50/70 dark:bg-[#1E2533] border-b-2 border-black dark:border-white/20 select-none hover:bg-blue-100/70 dark:hover:bg-[#252E40] transition-colors"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 bg-[#4169E1] text-white brutal-border">
-                <ListTree className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="font-black text-sm text-[#111111] dark:text-white uppercase tracking-wider">
-                  Mục lục nội dung
-                </span>
-                <span className="ml-2 px-2 py-0.5 text-[10px] font-black bg-[#FFD93D] text-black brutal-border rounded-none">
-                  {toc.length} mục
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="p-1.5 bg-white dark:bg-[#181B22] brutal-border text-black dark:text-white"
-              aria-label="Toggle Table of Contents"
-            >
-              {tocExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {tocExpanded && (
-            <div className="p-5">
-              <nav className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs sm:text-sm">
-                {toc.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => scrollToHeading(item.id)}
-                    className={`flex items-start text-left p-2 rounded-none transition-all hover:bg-[#FFD93D]/20 hover:translate-x-1 ${
-                      item.level === 3
-                        ? 'pl-6 text-gray-600 dark:text-gray-400 font-normal text-xs'
-                        : 'font-bold text-[#111111] dark:text-gray-200'
-                    }`}
-                  >
-                    <span className="mr-2 text-[#4169E1] dark:text-[#60A5FA] font-black">
-                      {item.level === 3 ? '↳' : '•'}
-                    </span>
-                    <span className="line-clamp-2">{item.text}</span>
-                  </button>
-                ))}
-              </nav>
-            </div>
-          )}
-        </section>
-      )}
-
       {/* Main Content Area: FULL WIDTH (max-w-4xl) */}
-      <main className="p-6 sm:p-10 bg-white dark:bg-[#181B22] brutal-card">
+      <main className="p-4 sm:p-8 md:p-10 bg-white dark:bg-[#181B22] brutal-card w-full max-w-full overflow-hidden">
         {post.cover && (
           <div className="mb-8 overflow-hidden brutal-border max-h-[460px]">
             <img

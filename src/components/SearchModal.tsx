@@ -132,7 +132,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             <div>
               <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#4169E1] dark:text-[#60A5FA] mb-2">
                 <Wrench className="w-3.5 h-3.5" />
-                <span>Công cụ học tập ({matchedTools.length})</span>
+                <span>Công cụ ({matchedTools.length})</span>
               </div>
               <div className="space-y-2">
                 {matchedTools.map((tool) => (

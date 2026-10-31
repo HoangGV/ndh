@@ -23,12 +23,12 @@ export default function App() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedTagFilter, setSelectedTagFilter] = useState<string | undefined>(undefined);
 
-  // Initialize theme from HTML or localStorage
+  // Initialize theme from localStorage (Mặc định Light Mode)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('ndh-theme');
       if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      return 'light';
     }
     return 'light';
   });
@@ -144,7 +144,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF5] text-[#111111] dark:bg-[#0F1115] dark:text-[#F3F4F6] transition-colors">
+    <div className="min-h-screen flex flex-col bg-[#FAFAF5] text-[#111111] dark:bg-[#0F1115] dark:text-[#F3F4F6] transition-colors w-full max-w-full overflow-x-hidden">
       <Header
         currentPath={currentPath}
         onNavigate={navigateTo}
@@ -153,7 +153,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
       />
 
-      <main className="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-grow max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-hidden">
         {renderView()}
       </main>
 

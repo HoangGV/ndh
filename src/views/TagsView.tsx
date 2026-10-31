@@ -38,7 +38,7 @@ export const TagsView: React.FC<TagsViewProps> = ({ onNavigate, onSelectTag }) =
           <span>TAXONOMY · TẤT CẢ CHỦ ĐỀ</span>
         </div>
         <h1 className="text-2xl sm:text-4xl font-black text-[#111111] dark:text-white">
-          Kho Thẻ & Chủ Đề Bài Viết
+          Tags & Chủ Đề Bài Viết
         </h1>
         <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
           Khám phá tất cả các danh mục bài viết trên NDH được phân loại theo chủ đề để bạn dễ dàng theo dõi kiến thức chuyên sâu.

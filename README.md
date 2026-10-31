@@ -142,13 +142,11 @@ Hệ thống tích hợp sẵn bộ phân giải **KaTeX**:
 
 ---
 
-## 📑 6. Bố cục Mục lục Bài viết (Table of Contents)
+## 📑 6. Bố cục Mục lục Bài viết (Table of Contents) & Giao diện Responsive
 
-Để tránh tình trạng mục lục bên cạnh làm co hẹp khung bài đọc chính trên màn hình máy tính:
-1. **Mục lục đầu bài (Collapsible TOC):** Nằm gọn gàng ngay đầu bài viết dưới dạng hộp gập/mở, tự động sinh từ các tiêu đề `##` và `###`.
-2. **Mục lục Nổi (Floating Quick TOC):** Một nút "Mục lục" nổi ở góc dưới bên phải màn hình khi người dùng cuộn trang. Bấm vào sẽ mở popup danh mục các phần để nhảy tới bất kỳ vị trí nào mà không chiếm diện tích nội dung bài viết.
-
----
+1. **Mục lục Nổi (Floating Quick TOC):** Khi cuộn trang đọc bài viết, một nút **"Mục lục"** cố định phong cách Neo-Brutalism sẽ xuất hiện ở góc dưới bên phải màn hình. Bấm vào sẽ mở popup danh mục các tiêu đề `##` và `###` để di chuyển nhanh tới bất kỳ phần nào mà không chiếm diện tích nội dung bài viết. Phần section mục lục tĩnh ở đầu bài đã được lược bỏ theo yêu cầu để giao diện bài viết thoáng đãng và tập trung nhất.
+2. **Giao diện Mặc định Light Mode:** Khi người dùng truy cập trang lần đầu, website mặc định ở chế độ **Light Mode** sáng sủa, đồng thời hỗ trợ nút chuyển đổi Dark Mode tùy thích và lưu trạng thái vào `localStorage`.
+3. **Thanh điều hướng tinh giản:** Nút **"Công cụ"** (thay cho "Công cụ học tập") và **"Tags"** (thay cho "Kho thẻ") hiển thị gọn gàng, tối ưu trên cả desktop lẫn màn hình điện thoại di động (không bị cuộn ngang).
 
 ## 🛠️ 7. Hướng dẫn Thêm & Quản lý Công Cụ Học Tập
 

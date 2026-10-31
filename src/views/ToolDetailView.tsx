@@ -185,11 +185,11 @@ export const ToolDetailView: React.FC<ToolDetailViewProps> = ({ slug, onNavigate
 
       {/* INTERNAL TOOL 1: POMODORO FOCUS */}
       {tool.slug === 'pomodoro-focus' && (
-        <div className="max-w-2xl mx-auto p-6 sm:p-10 bg-white dark:bg-[#181B22] brutal-card space-y-8">
-          <div className="flex items-center justify-center gap-2 p-1.5 bg-[#FAFAF5] dark:bg-[#12151C] brutal-border">
+        <div className="max-w-2xl mx-auto p-4 sm:p-8 md:p-10 bg-white dark:bg-[#181B22] brutal-card space-y-6 sm:space-y-8">
+          <div className="flex flex-wrap items-center justify-center gap-2 p-1.5 bg-[#FAFAF5] dark:bg-[#12151C] brutal-border">
             <button
               onClick={() => switchMode('work')}
-              className={`px-4 py-2 text-xs sm:text-sm font-black transition-all ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-black transition-all ${
                 mode === 'work'
                   ? 'bg-[#4169E1] text-white brutal-border shadow-[2px_2px_0_#111]'
                   : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
@@ -199,7 +199,7 @@ export const ToolDetailView: React.FC<ToolDetailViewProps> = ({ slug, onNavigate
             </button>
             <button
               onClick={() => switchMode('short')}
-              className={`px-4 py-2 text-xs sm:text-sm font-black transition-all ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-black transition-all ${
                 mode === 'short'
                   ? 'bg-[#4ADE80] text-black brutal-border shadow-[2px_2px_0_#111]'
                   : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
@@ -209,7 +209,7 @@ export const ToolDetailView: React.FC<ToolDetailViewProps> = ({ slug, onNavigate
             </button>
             <button
               onClick={() => switchMode('long')}
-              className={`px-4 py-2 text-xs sm:text-sm font-black transition-all ${
+              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-black transition-all ${
                 mode === 'long'
                   ? 'bg-[#FF9F43] text-black brutal-border shadow-[2px_2px_0_#111]'
                   : 'text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white'
@@ -220,7 +220,7 @@ export const ToolDetailView: React.FC<ToolDetailViewProps> = ({ slug, onNavigate
           </div>
 
           <div className="text-center py-6 bg-[#FAFAF5] dark:bg-[#12151C] brutal-border shadow-[4px_4px_0_#111] dark:shadow-[4px_4px_0_#60A5FA]">
-            <div className="font-mono text-6xl sm:text-8xl font-black tracking-tight text-[#111111] dark:text-white select-none">
+            <div className="font-mono text-5xl sm:text-7xl md:text-8xl font-black tracking-tight text-[#111111] dark:text-white select-none">
               {formatTime(timeLeft)}
             </div>
             <p className="text-xs font-bold text-gray-500 mt-2">

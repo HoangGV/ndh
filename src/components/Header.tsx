@@ -20,8 +20,8 @@ export const Header: React.FC<HeaderProps> = ({
 
   const navItems = [
     { label: 'Bài viết', path: '/', icon: BookOpen },
-    { label: 'Công cụ học tập', path: '/tool', icon: Wrench },
-    { label: 'Kho thẻ', path: '/tag', icon: Tag },
+    { label: 'Công cụ', path: '/tool', icon: Wrench },
+    { label: 'Tags', path: '/tag', icon: Tag },
     { label: 'Giới thiệu', path: '/gioi-thieu', icon: User },
   ];
 
@@ -31,18 +31,18 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-md border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] px-4 lg:px-8 py-3 transition-colors">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-md border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors w-full max-w-full overflow-x-hidden">
+      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo / Brand Zone */}
         <div
           onClick={() => handleNavClick('/')}
-          className="flex items-center gap-3 cursor-pointer group select-none shrink-0"
+          className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none shrink-0"
         >
-          <div className="bg-[#4169E1] text-white font-extrabold text-xl px-2.5 py-1 brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] transition-transform">
+          <div className="bg-[#4169E1] text-white font-extrabold text-base sm:text-xl px-2 py-0.5 sm:px-2.5 sm:py-1 brutal-border shadow-[2px_2px_0_#111] sm:shadow-[3px_3px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] transition-transform">
             NDH
           </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-lg tracking-tight leading-tight group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA] transition-colors">
+            <span className="font-extrabold text-base sm:text-lg tracking-tight leading-tight group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA] transition-colors">
               Người Đồng Hành
             </span>
             <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 hidden sm:inline">
@@ -77,11 +77,11 @@ export const Header: React.FC<HeaderProps> = ({
         </nav>
 
         {/* Right Controls: Search, Theme Toggle, Mobile Menu */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Quick Search Button */}
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold bg-[#FFD93D] text-[#111111] brutal-border shadow-[2px_2px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold bg-[#FFD93D] text-[#111111] brutal-border shadow-[2px_2px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[1px] active:translate-y-[1px] transition-all"
             title="Tìm kiếm bài viết hoặc công cụ (Phím tắt: Ctrl + K)"
           >
             <Search className="w-3.5 h-3.5" />

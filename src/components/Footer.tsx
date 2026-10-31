@@ -47,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/tool')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Công cụ học tập (Săn chữ, Pomodoro, Đếm từ)
+                  → Công cụ (Săn chữ, Pomodoro, Đếm từ)
                 </button>
               </li>
               <li>
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   onClick={() => onNavigate('/tag')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
                 >
-                  → Kho thẻ chủ đề bài viết
+                  → Tags (Chủ đề bài viết)
                 </button>
               </li>
               <li>
