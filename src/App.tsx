@@ -75,10 +75,83 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Chuẩn hóa đường dẫn (bỏ hậu tố .html nếu truy cập trực tiếp tệp tĩnh)
+  const normalizedPath =
+    currentPath === '/' ? '/' : currentPath.replace(/\.html$/i, '').replace(/\/$/, '') || '/';
+
+  // Đồng bộ thẻ tiêu đề & OpenGraph khi chuyển trang trên trình duyệt
+  useEffect(() => {
+    const siteName = 'Người Đồng Hành';
+    const siteOrigin = window.location.origin;
+    const defaultTitle = 'Người Đồng Hành - Cùng đổi mới, cùng phát triển';
+    const defaultDesc =
+      'Cùng Người Đồng Hành tìm hiểu những phương pháp, kĩ thuật dạy học hiện đại và xây dựng các công cụ học tập số';
+    const defaultImage = `${siteOrigin}/nguoi-dong-hanh-ndh.webp`;
+
+    let pageTitle = defaultTitle;
+    let ogTitle = defaultTitle;
+    let description = defaultDesc;
+    let image = defaultImage;
+    let ogType = 'website';
+
+    if (normalizedPath === '/tool') {
+      pageTitle = `Công cụ - ${siteName}`;
+      ogTitle = `Công cụ học tập - ${siteName}`;
+      description =
+        'Bộ công cụ học tập và giảng dạy miễn phí trên Người Đồng Hành: Săn cụm động từ, đồng hồ Pomodoro, đếm từ và các tiện ích số.';
+    } else if (normalizedPath === '/tag') {
+      pageTitle = `Tags - ${siteName}`;
+      ogTitle = `Tags và chủ đề bài viết - ${siteName}`;
+      description =
+        'Khám phá toàn bộ chủ đề bài viết, phương pháp dạy học hiện đại và công cụ số tại Người Đồng Hành.';
+    } else if (normalizedPath === '/gioi-thieu') {
+      pageTitle = `Giới thiệu - ${siteName}`;
+      ogTitle = `Giới thiệu - ${siteName}`;
+      description =
+        'Tìm hiểu về Hoàng Lam và hệ sinh thái Người Đồng Hành – không gian chia sẻ tài liệu, phương pháp dạy học và công cụ miễn phí.';
+    } else if (normalizedPath !== '/' && !normalizedPath.startsWith('/tag/') && !normalizedPath.startsWith('/tool/')) {
+      const slug = normalizedPath.replace(/^\//, '');
+      const matchedPost = POSTS.find((p) => p.slug === slug);
+      if (matchedPost) {
+        pageTitle = `${matchedPost.title} | ${siteName}`;
+        ogTitle = matchedPost.title;
+        description = matchedPost.description || defaultDesc;
+        if (matchedPost.cover) {
+          image = /^https?:\/\//i.test(matchedPost.cover)
+            ? matchedPost.cover
+            : `${siteOrigin}${matchedPost.cover.startsWith('/') ? '' : '/'}${matchedPost.cover}`;
+        }
+        ogType = 'article';
+      }
+    }
+
+    document.title = pageTitle;
+
+    const setMeta = (selector: string, content: string) => {
+      const el = document.querySelector(selector);
+      if (el) el.setAttribute('content', content);
+    };
+
+    const canonicalUrl = `${siteOrigin}${normalizedPath === '/' ? '/' : normalizedPath}`;
+    setMeta('meta[name="description"]', description);
+    setMeta('meta[property="og:title"]', ogTitle);
+    setMeta('meta[property="og:description"]', description);
+    setMeta('meta[property="og:image"]', image);
+    setMeta('meta[property="og:image:secure_url"]', image);
+    setMeta('meta[property="og:url"]', canonicalUrl);
+    setMeta('meta[property="og:type"]', ogType);
+    setMeta('meta[name="twitter:title"]', ogTitle);
+    setMeta('meta[name="twitter:description"]', description);
+    setMeta('meta[name="twitter:image"]', image);
+
+    const canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (canonicalEl) canonicalEl.setAttribute('href', canonicalUrl);
+  }, [normalizedPath]);
+
   // ROUTER LOGIC
   const renderView = () => {
     // 1. Home / Articles
-    if (currentPath === '/' || currentPath === '') {
+    if (normalizedPath === '/' || normalizedPath === '') {
       return (
         <HomeView
           onNavigate={navigateTo}
@@ -88,7 +161,7 @@ export default function App() {
     }
 
     // 2. Tag Pages
-    if (currentPath === '/tag' || currentPath === '/tag/') {
+    if (normalizedPath === '/tag') {
       return (
         <TagsView
           onNavigate={navigateTo}
@@ -100,8 +173,8 @@ export default function App() {
       );
     }
 
-    if (currentPath.startsWith('/tag/')) {
-      const tagName = decodeURIComponent(currentPath.replace('/tag/', ''));
+    if (normalizedPath.startsWith('/tag/')) {
+      const tagName = decodeURIComponent(normalizedPath.replace('/tag/', ''));
       return (
         <HomeView
           onNavigate={navigateTo}
@@ -111,23 +184,23 @@ export default function App() {
     }
 
     // 3. Tools Directory
-    if (currentPath === '/tool' || currentPath === '/tool/') {
+    if (normalizedPath === '/tool') {
       return <ToolsView onNavigate={navigateTo} />;
     }
 
     // 4. Specific Tool Detail
-    if (currentPath.startsWith('/tool/')) {
-      const toolSlug = currentPath.replace('/tool/', '');
+    if (normalizedPath.startsWith('/tool/')) {
+      const toolSlug = normalizedPath.replace('/tool/', '');
       return <ToolDetailView slug={toolSlug} onNavigate={navigateTo} />;
     }
 
     // 5. About Page
-    if (currentPath === '/gioi-thieu' || currentPath === '/gioi-thieu/') {
+    if (normalizedPath === '/gioi-thieu') {
       return <AboutView onNavigate={navigateTo} />;
     }
 
     // 6. Direct Root Article Post Slugs (e.g., /xay-dung-static-site-astro-github-pages)
-    const rawSlug = currentPath.replace(/^\//, '').replace(/\/$/, '');
+    const rawSlug = normalizedPath.replace(/^\//, '');
     const matchedPost = POSTS.find((p) => p.slug === rawSlug);
 
     if (matchedPost) {
