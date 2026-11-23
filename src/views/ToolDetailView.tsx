@@ -236,7 +236,7 @@ export const ToolDetailView: React.FC<ToolDetailViewProps> = ({ slug, onNavigate
               type="text"
               value={taskName}
               onChange={(e) => setTaskName(e.target.value)}
-              placeholder="Ví dụ: Ôn tập chương 3 Giải tích, Đọc xong bài viết Astro..."
+              placeholder="Ví dụ: Ôn tập chương 3 Giải tích, đọc xong bài viết Astro..."
               className="w-full px-3.5 py-2 text-sm font-bold bg-[#FAFAF5] dark:bg-[#12151C] brutal-border outline-hidden"
             />
           </div>

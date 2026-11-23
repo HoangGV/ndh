@@ -15,7 +15,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigate, onOpenSe
 
       <div className="space-y-2">
         <h1 className="text-2xl sm:text-3xl font-black text-[#111111] dark:text-white">
-          Trang Này Đang Lạc Bước!
+          Trang này đang lạc bước!
         </h1>
         <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
           Đường dẫn bạn vừa truy cập không tồn tại hoặc đã được chuyển sang địa chỉ mới trên <strong>NDH | Người Đồng Hành</strong>.

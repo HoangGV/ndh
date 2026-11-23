@@ -31,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-md border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors w-full max-w-full overflow-x-hidden">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-md border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors w-full max-w-full overflow-x-clip">
       <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
         {/* Logo / Brand Zone */}
         <div

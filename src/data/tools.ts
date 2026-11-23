@@ -4,10 +4,10 @@ export const TOOLS: Tool[] = [
   {
     id: 'word-hunt',
     slug: 'word-hunt',
-    name: 'Săn Cụm Động Từ - Word Hunt',
+    name: 'Săn cụm động từ - Word Hunt',
     description: 'Trò chơi tìm 20 cụm động từ (Phrasal Verbs) ẩn trong dải chữ uốn lượn theo giáo án của Ms Alice (Lương Tâm).',
     icon: 'Gamepad2',
-    category: 'Tư duy & Học tập',
+    category: 'Tư duy và học tập',
     type: 'external',
     url: 'https://dhhd.ndh.io.vn/word-hunt.html',
     order: 1,
@@ -28,7 +28,7 @@ export const TOOLS: Tool[] = [
   {
     id: '2',
     slug: 'word-counter',
-    name: 'Đếm từ & Phân tích văn bản',
+    name: 'Đếm từ và phân tích văn bản',
     description: 'Công cụ đếm số từ, ký tự, câu, đoạn văn, tính thời gian đọc ước tính và chuyển đổi chữ hoa/thường tức thì ngay trên trình duyệt.',
     icon: 'FileText',
     category: 'Soạn thảo',
@@ -40,10 +40,10 @@ export const TOOLS: Tool[] = [
   {
     id: '3',
     slug: 'excalidraw-mindmap',
-    name: 'Bảng vẽ Excalidraw Sơ đồ tư duy',
+    name: 'Bảng vẽ sơ đồ tư duy Excalidraw',
     description: 'Bảng vẽ phác thảo ý tưởng, vẽ kiến trúc hệ thống và sơ đồ tư duy trực quan không giới hạn không gian làm việc.',
     icon: 'PenTool',
-    category: 'Tư duy & Học tập',
+    category: 'Tư duy và học tập',
     type: 'embed',
     url: 'https://excalidraw.com',
     order: 4,
@@ -53,10 +53,10 @@ export const TOOLS: Tool[] = [
   {
     id: '4',
     slug: 'desmos-graphing',
-    name: 'Máy tính Khoa học & Đồ thị Desmos',
+    name: 'Máy tính khoa học và đồ thị Desmos',
     description: 'Vẽ đồ thị hàm số 2D trực quan, giải phương trình và thực hiện các phép tính toán đại số nâng cao chuẩn mực giáo dục.',
     icon: 'Calculator',
-    category: 'Toán học & Khoa học',
+    category: 'Toán học và khoa học',
     type: 'embed',
     url: 'https://www.desmos.com/calculator?embed',
     order: 5,
@@ -66,7 +66,7 @@ export const TOOLS: Tool[] = [
   {
     id: '5',
     slug: 'devdocs-reference',
-    name: 'Tra cứu tài liệu Web & Lập trình MDN',
+    name: 'Tra cứu tài liệu web và lập trình MDN',
     description: 'Kho tri thức toàn diện về HTML, CSS, JavaScript, Web APIs và các chuẩn công nghệ mở được cập nhật liên tục.',
     icon: 'BookOpen',
     category: 'Tra cứu',
@@ -79,9 +79,9 @@ export const TOOLS: Tool[] = [
 
 export const TOOL_CATEGORIES = [
   'Tất cả',
-  'Tư duy & Học tập',
+  'Tư duy và học tập',
   'Năng suất',
   'Soạn thảo',
-  'Toán học & Khoa học',
+  'Toán học và khoa học',
   'Tra cứu'
 ];

@@ -144,7 +144,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF5] text-[#111111] dark:bg-[#0F1115] dark:text-[#F3F4F6] transition-colors w-full max-w-full overflow-x-hidden">
+    <div className="min-h-screen flex flex-col bg-[#FAFAF5] text-[#111111] dark:bg-[#0F1115] dark:text-[#F3F4F6] transition-colors w-full max-w-full overflow-x-clip">
       <Header
         currentPath={currentPath}
         onNavigate={navigateTo}
@@ -153,7 +153,7 @@ export default function App() {
         onToggleTheme={toggleTheme}
       />
 
-      <main className="flex-grow max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-hidden">
+      <main className="flex-grow max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-clip">
         {renderView()}
       </main>
 

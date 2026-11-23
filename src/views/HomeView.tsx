@@ -44,7 +44,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-black/10 dark:border-white/10 pb-3">
           <h1 className="text-xl sm:text-2xl font-black text-[#111111] dark:text-white flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#4169E1] dark:text-[#60A5FA]" />
-            <span>Bài viết & Nghiên cứu mới nhất</span>
+            <span>Bài viết và nghiên cứu mới nhất</span>
           </h1>
           <span className="text-xs font-bold text-gray-500">
             {filteredPosts.length} bài viết
