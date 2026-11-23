@@ -4,9 +4,9 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 // =============================================================================
-// CẤU HÌNH DEPLOY CHO CLOUDFLARE PAGES (100% STATIC SITE)
+// CẤU HÌNH DEPLOY CHO CLOUDFLARE (100% STATIC SITE)
 // =============================================================================
-// - Output directory: ./dist (khớp với pages_build_output_dir trong wrangler.toml)
+// - Output directory: ./dist (khớp với [assets] directory trong wrangler.toml)
 // - build.assets: 'assets' (tránh sinh thư mục bắt đầu bằng dấu gạch dưới `_astro`)
 // - Không sử dụng _headers, _redirects hay các file có tiền tố `_`
 // =============================================================================

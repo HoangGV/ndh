@@ -1,7 +1,10 @@
-# Cấu hình triển khai Cloudflare Pages (Static Site)
-# Tài liệu: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+# Cấu hình triển khai Cloudflare Workers Static Assets (dùng với `npx wrangler deploy`)
+# Tài liệu: https://developers.cloudflare.com/workers/static-assets/
 # Không sử dụng các file tiền tố dấu gạch dưới (_headers, _redirects, _routes.json)
 
 name = "ndh-blog"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = "./dist"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"

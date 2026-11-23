@@ -21,37 +21,37 @@
 
 ---
 
-## ☁️ 1. Triển khai lên Cloudflare Pages & Cấu hình `wrangler.toml`
+## ☁️ 1. Triển khai lên Cloudflare & Cấu hình `wrangler.toml`
 
-Dự án đã được cấu hình chuẩn hóa 100% cho **Cloudflare Pages (Static Site)**:
+Dự án đã được cấu hình chuẩn hóa 100% cho **Cloudflare Workers & Pages (Static Assets)** với lệnh deploy mặc định `npx wrangler deploy`:
 
-- **`wrangler.toml`**: Đã khai báo sẵn `name = "ndh-blog"`, `compatibility_date = "2025-01-01"` và `pages_build_output_dir = "./dist"`.
-- **`.node-version`**: Cố định `20` để Cloudflare Pages tự động build bằng Node.js 20.
+- **`wrangler.toml`**:
+  ```toml
+  name = "ndh-blog"
+  compatibility_date = "2025-01-01"
+
+  [assets]
+  directory = "./dist"
+  not_found_handling = "single-page-application"
+  ```
+- **`.node-version`**: Cố định `20` để Cloudflare tự động build bằng Node.js 20.
 - **Không dùng file có dấu gạch dưới (`_headers`, `_redirects`, `_routes.json`)**:
-  - Website không tạo `dist/404.html` nên Cloudflare Pages tự động bật chế độ **SPA fallback** (trả về `index.html` HTTP 200 cho mọi đường dẫn như `/tool`, `/tag`, `/gioi-thieu`, `/slug-bai-viet` mà không cần file `_redirects`).
-  - Trong `astro.config.mjs`, tài nguyên build được đặt thành `build.assets: 'assets'` để không tạo thư mục `_astro`.
-  - Đã xóa file `.nojekyll` vốn chỉ dành cho GitHub Pages.
+  - `not_found_handling = "single-page-application"` tự động xử lý SPA fallback (trả về `index.html` HTTP 200 cho mọi đường dẫn `/tool`, `/tag`, `/gioi-thieu`, `/slug-bai-viet` mà không cần `_redirects`).
+  - Không tạo `dist/404.html` và cấu hình `build.assets: 'assets'` trong `astro.config.mjs`.
 
-### Cách 1: Kết nối Git trực tiếp trên Cloudflare Pages Dashboard (Khuyên dùng)
-1. Vào **Cloudflare Dashboard** → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
-2. Chọn repository của bạn và thiết lập:
+### Cách 1: Kết nối Git trên Cloudflare Dashboard (Workers & Pages)
+1. Vào **Cloudflare Dashboard** → **Workers & Pages** → **Create** → Kết nối repository GitHub.
+2. Cấu hình Build:
    - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Environment variables (nếu cần):** `NODE_VERSION = 20` (đã có sẵn file `.node-version`)
-3. Nhấn **Save and Deploy**. Mọi commit đẩy lên nhánh `main` sau này sẽ tự động build và deploy lên Cloudflare Pages.
-4. Gắn tên miền riêng (ví dụ `blog.ndh.io.vn`) tại mục **Custom domains** trong dự án Cloudflare Pages.
+   - **Deploy command:** `npx wrangler deploy`
+3. Nhấn **Save and Deploy**. Cloudflare sẽ đọc trực tiếp `[assets]` từ `wrangler.toml` và xuất bản thư mục `dist/` hoàn toàn tự động.
+4. Gắn tên miền riêng (`ndh.io.vn` / `blog.ndh.io.vn`) tại mục **Settings → Domains & Routes**.
 
 ### Cách 2: Deploy trực tiếp bằng Wrangler CLI
 ```bash
-npm run cf:preview   # Chạy thử bản build trên môi trường Cloudflare Pages cục bộ
-npm run deploy       # Build và deploy thẳng lên Cloudflare Pages qua Wrangler
+npm run cf:preview   # Chạy thử bản build cục bộ bằng Wrangler
+npm run deploy       # Build và chạy `npx wrangler deploy` lên Cloudflare
 ```
-
-### Cách 3: Tự động deploy qua GitHub Actions (`.github/workflows/deploy.yml`)
-- Mặc định khi push lên `main`, workflow sẽ kiểm tra build sạch sẽ.
-- Nếu bạn muốn GitHub Actions tự chạy `wrangler pages deploy`, chỉ cần thêm 2 GitHub Secrets vào repo:
-  - `CLOUDFLARE_API_TOKEN` (API Token có quyền **Cloudflare Pages: Edit**)
-  - `CLOUDFLARE_ACCOUNT_ID` (Account ID của bạn trên Cloudflare)
 
 ---
 
