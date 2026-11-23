@@ -64,11 +64,6 @@ pre {
   -webkit-overflow-scrolling: touch;
 }
 
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
 /* Neo-Brutalism Shadows & Animations */
 .brutal-border {
   border: 2.5px solid #111111;

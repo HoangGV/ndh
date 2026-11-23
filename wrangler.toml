@@ -1,0 +1,7 @@
+# Cấu hình triển khai Cloudflare Pages (Static Site)
+# Tài liệu: https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+# Không sử dụng các file tiền tố dấu gạch dưới (_headers, _redirects, _routes.json)
+
+name = "ndh-blog"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "./dist"

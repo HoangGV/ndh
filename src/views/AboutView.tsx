@@ -11,9 +11,13 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigate }) => {
       {/* (1) Section trên cùng: Thông tin tác giả */}
       <section className="p-6 sm:p-10 bg-white dark:bg-[#181B22] brutal-card">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-          <div className="relative">
-            <div className="w-24 h-24 sm:w-28 sm:h-28 bg-[#FFD93D] brutal-border shadow-[4px_4px_0_#111] dark:shadow-[4px_4px_0_#60A5FA] flex items-center justify-center text-4xl font-black select-none">
-              HL
+          <div className="relative shrink-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 bg-[#FFD93D] brutal-border shadow-[4px_4px_0_#111] dark:shadow-[4px_4px_0_#60A5FA] overflow-hidden select-none">
+              <img
+                src="/avt.webp"
+                alt="Hoàng Lam - Admin NDH"
+                className="w-full h-full object-cover object-top"
+              />
             </div>
             <div className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-[#4ADE80] text-black text-[10px] font-black brutal-border">
               ADMIN

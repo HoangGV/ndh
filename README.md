@@ -10,33 +10,48 @@
 ---
 
 ## 📑 MỤC LỤC
-1. [Khắc phục Lỗi Build GitHub Actions (Dependencies lock file)](#1-khắc-phục-lỗi-build-github-actions)
+1. [Triển khai lên Cloudflare Pages & Cấu hình `wrangler.toml`](#1-triển-khai-lên-cloudflare-pages--cấu-hình-wranglertoml)
 2. [Cấu trúc Quản lý Bài Viết: `src/content/blog/*.md`](#2-cấu-trúc-quản-lý-bài-viết-srccontentblogmd)
 3. [Hướng dẫn Tạo Bài Đăng Mới bằng file Markdown](#3-hướng-dẫn-tạo-bài-đăng-mới-bằng-file-markdown)
-4. [Quản trị Thẻ & Kho Thẻ (Tự động 100%)](#4-quản-trị-thẻ--kho-thẻ-tự-động-100)
+4. [Quản trị Thẻ & Tags (Tự động 100%)](#4-quản-trị-thẻ--kho-thẻ-tự-động-100)
 5. [Cú pháp Toán học LaTeX (KaTeX) & Khối Code có nút Copy](#5-cú-pháp-toán-học-latex-katex--khối-code-có-nút-copy)
-6. [Bố cục Mục lục Bài viết (Table of Contents)](#6-bố-cục-mục-lục-bài-viết-table-of-contents)
-7. [Hướng dẫn Thêm & Quản lý Công Cụ Học Tập](#7-hướng-dẫn-thêm--quản-lý-công-cụ-học-tập)
-8. [Tự Động Triển Khai GitHub Pages qua GitHub Actions](#8-tự-động-triển-khai-github-pages-qua-github-actions)
+6. [Bố cục Mục lục Bài viết (Table of Contents) & Giao diện Responsive](#6-bố-cục-mục-lục-bài-viết-table-of-contents--giao-diện-responsive)
+7. [Hướng dẫn Thêm & Quản lý Công Cụ](#7-hướng-dẫn-thêm--quản-lý-công-cụ-học-tập)
+8. [Thay đổi Ảnh đại diện (`public/avt.webp`)](#8-thay-đổi-ảnh-đại-diện-publicavtwebp)
 
 ---
 
-## 🚨 1. Khắc phục Lỗi Build GitHub Actions
+## ☁️ 1. Triển khai lên Cloudflare Pages & Cấu hình `wrangler.toml`
 
-### Nguyên nhân lỗi bạn vừa gặp:
-```
-Error: Dependencies lock file is not found in /home/runner/work/ndh/ndh. 
-Supported file patterns: package-lock.json,npm-shrinkwrap.json,yarn.lock
-```
-- Khi chạy `actions/setup-node@v4` với cấu hình `cache: npm`, GitHub Actions bắt buộc repository trên GitHub phải có file `package-lock.json`. Nếu không có file này hoặc chỉ có `bun.lock`, bước setup-node sẽ lập tức báo lỗi và dừng lại.
-- Thêm vào đó, lệnh `npm ci` cũng yêu cầu `package-lock.json` đồng bộ tuyệt đối với `package.json`.
+Dự án đã được cấu hình chuẩn hóa 100% cho **Cloudflare Pages (Static Site)**:
 
-### Cách xử lý triệt để đã được thực hiện:
-1. **Đã sinh file `package-lock.json` chuẩn** trong thư mục gốc của dự án.
-2. **Cập nhật file `.github/workflows/deploy.yml`**:
-   - Sử dụng `npm install --legacy-peer-deps` để tự động tương thích mọi gói thư viện mà không bị kẹt lỗi peer dependency.
-   - Thêm cờ bỏ qua lỗi mềm cho `pagefind` (`npx pagefind --site dist || true`).
-3. **Khi bạn commit và push lên GitHub**: GitHub Actions sẽ tự động chạy thành công 100%, build ra thư mục tĩnh `dist/` và xuất bản lên GitHub Pages với tên miền của bạn!
+- **`wrangler.toml`**: Đã khai báo sẵn `name = "ndh-blog"`, `compatibility_date = "2025-01-01"` và `pages_build_output_dir = "./dist"`.
+- **`.node-version`**: Cố định `20` để Cloudflare Pages tự động build bằng Node.js 20.
+- **Không dùng file có dấu gạch dưới (`_headers`, `_redirects`, `_routes.json`)**:
+  - Website không tạo `dist/404.html` nên Cloudflare Pages tự động bật chế độ **SPA fallback** (trả về `index.html` HTTP 200 cho mọi đường dẫn như `/tool`, `/tag`, `/gioi-thieu`, `/slug-bai-viet` mà không cần file `_redirects`).
+  - Trong `astro.config.mjs`, tài nguyên build được đặt thành `build.assets: 'assets'` để không tạo thư mục `_astro`.
+  - Đã xóa file `.nojekyll` vốn chỉ dành cho GitHub Pages.
+
+### Cách 1: Kết nối Git trực tiếp trên Cloudflare Pages Dashboard (Khuyên dùng)
+1. Vào **Cloudflare Dashboard** → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Chọn repository của bạn và thiết lập:
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Environment variables (nếu cần):** `NODE_VERSION = 20` (đã có sẵn file `.node-version`)
+3. Nhấn **Save and Deploy**. Mọi commit đẩy lên nhánh `main` sau này sẽ tự động build và deploy lên Cloudflare Pages.
+4. Gắn tên miền riêng (ví dụ `blog.ndh.io.vn`) tại mục **Custom domains** trong dự án Cloudflare Pages.
+
+### Cách 2: Deploy trực tiếp bằng Wrangler CLI
+```bash
+npm run cf:preview   # Chạy thử bản build trên môi trường Cloudflare Pages cục bộ
+npm run deploy       # Build và deploy thẳng lên Cloudflare Pages qua Wrangler
+```
+
+### Cách 3: Tự động deploy qua GitHub Actions (`.github/workflows/deploy.yml`)
+- Mặc định khi push lên `main`, workflow sẽ kiểm tra build sạch sẽ.
+- Nếu bạn muốn GitHub Actions tự chạy `wrangler pages deploy`, chỉ cần thêm 2 GitHub Secrets vào repo:
+  - `CLOUDFLARE_API_TOKEN` (API Token có quyền **Cloudflare Pages: Edit**)
+  - `CLOUDFLARE_ACCOUNT_ID` (Account ID của bạn trên Cloudflare)
 
 ---
 
@@ -194,13 +209,7 @@ Ví dụ Máy tính đồ thị Desmos:
 
 ---
 
-## 🚀 8. Tự Động Triển Khai GitHub Pages qua GitHub Actions
+## 🖼️ 8. Thay đổi Ảnh đại diện (`public/avt.webp`)
 
-1. File workflow `.github/workflows/deploy.yml` đã được tối ưu:
-   - Tự động kích hoạt khi có commit đẩy lên nhánh `main`.
-   - Cài đặt thư viện với `npm install --legacy-peer-deps`.
-   - Build website tĩnh sang thư mục `dist/`.
-   - Đẩy lên GitHub Pages an toàn, không lo thiếu `package-lock.json`.
-2. Cấu hình Custom Domain:
-   - File `public/CNAME` đã được cấu hình sẵn giá trị: `blog.ndh.io.vn`.
-   - Khi deploy, GitHub Pages sẽ tự động gán tên miền cá nhân của bạn.
+- Ảnh đại diện tác giả trên trang **Giới thiệu** (`/gioi-thieu`) được nạp trực tiếp từ tệp `public/avt.webp`.
+- Khi cần đổi ảnh đại diện mới, bạn chỉ cần ghi đè file `public/avt.webp` và build lại mà không cần sửa code.
