@@ -120,34 +120,66 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
           </div>
         `;
       },
-      heading(arg: any, levelNum?: number) {
-        const text = typeof arg === 'string' ? arg : arg.text || '';
-        const level = typeof arg === 'string' ? (levelNum || 1) : (arg.depth || 1);
-        const plainText = text.replace(/<[^>]*>/g, '');
+      heading(this: any, token: any) {
+        const renderedText = token.tokens
+          ? this.parser.parseInline(token.tokens)
+          : String(token.text || '');
+        const level = token.depth || 1;
+        const plainText = String(token.text || '').replace(/<[^>]*>/g, '');
         const id = plainText
           .toLowerCase()
           .replace(/[^\w\s\u00C0-\u024F\u1EA0-\u1EF9]/gi, '')
           .replace(/\s+/g, '-');
 
         if (level === 1) {
-          return `<h1 id="${id}" class="text-2xl sm:text-3xl font-black mt-8 mb-4 border-b-2 border-black dark:border-white/20 pb-2">${text}</h1>`;
+          return `<h1 id="${id}" class="text-2xl sm:text-3xl font-black mt-8 mb-4 border-b-2 border-black dark:border-white/20 pb-2">${renderedText}</h1>`;
         }
         if (level === 2) {
-          return `<h2 id="${id}" class="text-xl sm:text-2xl font-extrabold mt-8 mb-3 text-[#4169E1] dark:text-[#60A5FA] flex items-center gap-2"><span>#</span><span>${text}</span></h2>`;
+          return `<h2 id="${id}" class="text-xl sm:text-2xl font-extrabold mt-8 mb-3 text-[#4169E1] dark:text-[#60A5FA] flex items-center gap-2"><span>#</span><span>${renderedText}</span></h2>`;
         }
         if (level === 3) {
-          return `<h3 id="${id}" class="text-lg font-bold mt-6 mb-2 text-[#111111] dark:text-gray-100">${text}</h3>`;
+          return `<h3 id="${id}" class="text-lg font-bold mt-6 mb-2 text-[#111111] dark:text-gray-100">${renderedText}</h3>`;
         }
-        return `<h${level} id="${id}" class="font-bold my-4">${text}</h${level}>`;
+        return `<h${level} id="${id}" class="font-bold my-4">${renderedText}</h${level}>`;
       },
-      table(arg: any, bodyArg?: string) {
-        const header = typeof arg === 'string' ? arg : (arg?.header || '');
-        const body = typeof arg === 'string' ? (bodyArg || '') : (arg?.rows || arg?.body || '');
+      table(this: any, token: any) {
+        let headerCells = '';
+        for (const cell of token.header || []) {
+          const alignClass =
+            cell.align === 'center'
+              ? 'text-center'
+              : cell.align === 'right'
+                ? 'text-right'
+                : 'text-left';
+          const cellHtml = this.parser.parseInline(cell.tokens);
+          headerCells += `<th class="bg-[#FFD93D] text-black px-3.5 py-2.5 border-b-2 border-r border-black last:border-r-0 font-black text-xs uppercase tracking-wide ${alignClass}">${cellHtml}</th>`;
+        }
+
+        let bodyRows = '';
+        for (const row of token.rows || []) {
+          let rowCells = '';
+          for (const cell of row) {
+            const alignClass =
+              cell.align === 'center'
+                ? 'text-center'
+                : cell.align === 'right'
+                  ? 'text-right'
+                  : 'text-left';
+            const cellHtml = this.parser.parseInline(cell.tokens);
+            rowCells += `<td class="px-3.5 py-2.5 border-b border-r border-black/20 dark:border-white/15 last:border-r-0 text-xs sm:text-sm align-top ${alignClass}">${cellHtml}</td>`;
+          }
+          bodyRows += `<tr class="even:bg-[#FAFAF5] dark:even:bg-[#1B202C] hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors">${rowCells}</tr>`;
+        }
+
         return `
           <div class="table-responsive-wrapper my-6 overflow-x-auto max-w-full brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA]">
-            <table class="w-full min-w-[360px] border-collapse bg-white dark:bg-[#151922] text-xs sm:text-sm">
-              ${header}
-              ${body}
+            <table class="w-full min-w-[420px] border-collapse bg-white dark:bg-[#151922] text-[#111111] dark:text-gray-100">
+              <thead>
+                <tr>${headerCells}</tr>
+              </thead>
+              <tbody class="[&>tr:last-child>td]:border-b-0">
+                ${bodyRows}
+              </tbody>
             </table>
           </div>
         `;
@@ -343,9 +375,6 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
             [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:my-4 [&>ul>li]:my-1.5
             [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:my-4 [&>ol>li]:my-1.5
             [&>blockquote]:border-l-[4px] [&>blockquote]:border-[#4169E1] [&>blockquote]:bg-blue-50/70 dark:[&>blockquote]:bg-[#1A2234] [&>blockquote]:p-4 [&>blockquote]:my-6 [&>blockquote]:italic [&>blockquote]:font-medium [&>blockquote]:brutal-border-r-none
-            [&>table]:w-full [&>table]:border-collapse [&>table]:my-6 [&>table]:border-2 [&>table]:border-black dark:[&>table]:border-white/20
-            [&>table_th]:bg-[#FFD93D] [&>table_th]:text-black [&>table_th]:p-3 [&>table_th]:border-2 [&>table_th]:border-black [&>table_th]:font-black [&>table_th]:text-xs [&>table_th]:uppercase
-            [&>table_td]:p-3 [&>table_td]:border [&>table_td]:border-black/20 dark:[&>table_td]:border-white/20 [&>table_td]:text-xs sm:[&>table_td]:text-sm
             [&>hr]:border-t-2 [&>hr]:border-black/20 dark:[&>hr]:border-white/20 [&>hr]:my-8"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
