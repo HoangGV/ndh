@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Search, Menu, X, BookOpen, Wrench, User, Tag } from 'lucide-react';
+import { Sun, Moon, Search, Menu, X, BookOpen, Wrench, User, Tag, PenSquare } from 'lucide-react';
 
 interface HeaderProps {
   currentPath: string;
@@ -18,10 +18,16 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const navItems: Array<{
+    label: string;
+    path: string;
+    icon: React.ComponentType<{ className?: string }>;
+    external?: boolean;
+  }> = [
     { label: 'Bài viết', path: '/', icon: BookOpen },
     { label: 'Công cụ', path: '/tool', icon: Wrench },
     { label: 'Tags', path: '/tag', icon: Tag },
+    { label: 'Viết bài', path: 'https://app.ndh.io.vn/cms', icon: PenSquare, external: true },
     { label: 'Giới thiệu', path: '/gioi-thieu', icon: User },
   ];
 
@@ -52,8 +58,23 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
+        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
           {navItems.map((item) => {
+            if (item.external) {
+              return (
+                <a
+                  key={item.path}
+                  href={item.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 lg:px-3.5 py-1.5 text-sm font-bold border-2 transition-all bg-transparent text-gray-700 dark:text-gray-200 border-transparent hover:border-[#111111] dark:hover:border-gray-500 hover:bg-black/5 dark:hover:bg-white/5"
+                >
+                  <item.icon className="w-4 h-4" />
+                  <span>{item.label}</span>
+                </a>
+              );
+            }
+
             const isActive =
               item.path === '/'
                 ? currentPath === '/'
@@ -63,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={item.path}
                 onClick={() => handleNavClick(item.path)}
-                className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-bold border-2 transition-all ${
+                className={`flex items-center gap-1.5 px-3 lg:px-3.5 py-1.5 text-sm font-bold border-2 transition-all ${
                   isActive
                     ? 'bg-[#4169E1] text-white border-[#111111] dark:border-white shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA]'
                     : 'bg-transparent text-gray-700 dark:text-gray-200 border-transparent hover:border-[#111111] dark:hover:border-gray-500 hover:bg-black/5 dark:hover:bg-white/5'
@@ -116,20 +137,34 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-3 pt-3 border-t-2 border-black dark:border-white/20 flex flex-col gap-2">
-          {navItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => handleNavClick(item.path)}
-              className={`flex items-center gap-2.5 px-4 py-2 text-sm font-bold border-2 text-left ${
-                currentPath === item.path
-                  ? 'bg-[#4169E1] text-white border-black'
-                  : 'bg-white dark:bg-[#181B22] border-black dark:border-gray-600'
-              }`}
-            >
-              <item.icon className="w-4 h-4" />
-              <span>{item.label}</span>
-            </button>
-          ))}
+          {navItems.map((item) =>
+            item.external ? (
+              <a
+                key={item.path}
+                href={item.path}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2.5 px-4 py-2 text-sm font-bold border-2 text-left bg-white dark:bg-[#181B22] border-black dark:border-gray-600"
+              >
+                <item.icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </a>
+            ) : (
+              <button
+                key={item.path}
+                onClick={() => handleNavClick(item.path)}
+                className={`flex items-center gap-2.5 px-4 py-2 text-sm font-bold border-2 text-left ${
+                  currentPath === item.path
+                    ? 'bg-[#4169E1] text-white border-black'
+                    : 'bg-white dark:bg-[#181B22] border-black dark:border-gray-600'
+                }`}
+              >
+                <item.icon className="w-4 h-4" />
+                <span>{item.label}</span>
+              </button>
+            )
+          )}
         </div>
       )}
     </header>

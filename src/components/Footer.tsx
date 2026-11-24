@@ -59,6 +59,16 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </button>
               </li>
               <li>
+                <a
+                  href="https://app.ndh.io.vn/cms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
+                >
+                  → Viết bài
+                </a>
+              </li>
+              <li>
                 <button
                   onClick={() => onNavigate('/gioi-thieu')}
                   className="hover:text-[#4169E1] dark:hover:text-[#60A5FA] hover:underline"
