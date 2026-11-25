@@ -27,7 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
     { label: 'Bài viết', path: '/', icon: BookOpen },
     { label: 'Công cụ', path: '/tool', icon: Wrench },
     { label: 'Tags', path: '/tag', icon: Tag },
-    { label: 'Viết bài', path: 'https://app.ndh.io.vn/cms', icon: PenSquare, external: true },
+    { label: 'Viết bài', path: 'https://cms.ndh.io.vn/', icon: PenSquare, external: true },
     { label: 'Giới thiệu', path: '/gioi-thieu', icon: User },
   ];
 
