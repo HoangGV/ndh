@@ -10,7 +10,7 @@ cover: "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format
 
 ## 1. Chu trình Pomodoro 25/5 cơ bản
 
-Pomodoro (tiếng Ý nghĩa là quả cà chua) do Francesco Cirillo phát minh vào cuối những năm 1980. Quy tắc cốt lõi vô cùng giản dị:
+Pomodoro (trong tiếng Ý nghĩa là quả cà chua) do Francesco Cirillo phát minh vào cuối những năm 1980. Quy tắc cốt lõi vô cùng giản dị:
 
 | Bước | Hành động | Thời lượng | Ghi chú |
 | :--- | :--- | :--- | :--- |
