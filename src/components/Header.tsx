@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, Moon, Search, Menu, X, BookOpen, Wrench, User, Tag, PenSquare } from 'lucide-react';
+import { Sun, Moon, Search, Menu, X, ExternalLink } from 'lucide-react';
 
 interface HeaderProps {
   currentPath: string;
@@ -8,6 +8,20 @@ interface HeaderProps {
   theme: 'light' | 'dark';
   onToggleTheme: () => void;
 }
+
+interface NavItem {
+  label: string;
+  path: string;
+  external?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { label: 'Bài viết', path: '/' },
+  { label: 'Công cụ', path: '/tool' },
+  { label: 'Tags', path: '/tag' },
+  { label: 'Viết bài', path: 'https://cms.ndh.io.vn/', external: true },
+  { label: 'Giới thiệu', path: '/gioi-thieu' },
+];
 
 export const Header: React.FC<HeaderProps> = ({
   currentPath,
@@ -18,48 +32,45 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems: Array<{
-    label: string;
-    path: string;
-    icon: React.ComponentType<{ className?: string }>;
-    external?: boolean;
-  }> = [
-    { label: 'Bài viết', path: '/', icon: BookOpen },
-    { label: 'Công cụ', path: '/tool', icon: Wrench },
-    { label: 'Tags', path: '/tag', icon: Tag },
-    { label: 'Viết bài', path: 'https://cms.ndh.io.vn/', icon: PenSquare, external: true },
-    { label: 'Giới thiệu', path: '/gioi-thieu', icon: User },
-  ];
-
   const handleNavClick = (path: string) => {
     onNavigate(path);
     setMobileMenuOpen(false);
   };
 
-  return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0F1115]/95 backdrop-blur-md border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] px-3 sm:px-4 lg:px-8 py-2.5 sm:py-3 transition-colors w-full max-w-full overflow-x-clip">
-      <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-        {/* Logo / Brand Zone */}
-        <div
-          onClick={() => handleNavClick('/')}
-          className="flex items-center gap-2 sm:gap-3 cursor-pointer group select-none shrink-0"
-        >
-          <div className="bg-[#4169E1] text-white font-extrabold text-base sm:text-xl px-2 py-0.5 sm:px-2.5 sm:py-1 brutal-border shadow-[2px_2px_0_#111] sm:shadow-[3px_3px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] group-hover:translate-x-[-1px] group-hover:translate-y-[-1px] transition-transform">
-            NDH
-          </div>
-          <div className="flex flex-col">
-            <span className="font-extrabold text-base sm:text-lg tracking-tight leading-tight group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA] transition-colors">
-              Người Đồng Hành
-            </span>
-            <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 hidden sm:inline">
-              Cùng đổi mới, cùng phát triển
-            </span>
-          </div>
-        </div>
+  const isNavActive = (itemPath: string) => {
+    if (itemPath === '/') {
+      return currentPath === '/';
+    }
+    if (itemPath === '/tag') {
+      return currentPath === '/tag' || currentPath.startsWith('/tag/');
+    }
+    return currentPath === itemPath || currentPath.startsWith(`${itemPath}/`);
+  };
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 lg:gap-2">
-          {navItems.map((item) => {
+  return (
+    <header className="sticky top-0 z-40 w-full bg-white/95 dark:bg-[#111827]/95 backdrop-blur-sm border-b border-[#E2E8F0] dark:border-[#1E293B] transition-colors duration-200">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Left: Brand Logo */}
+        <button
+          type="button"
+          onClick={() => handleNavClick('/')}
+          className="flex items-center gap-2.5 shrink-0 group cursor-pointer text-left"
+          aria-label="Trang chủ Người Đồng Hành"
+        >
+          <img
+            src="/ndh.svg"
+            alt=""
+            aria-hidden="true"
+            className="w-7 h-7 shrink-0"
+          />
+          <span className="text-base font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] transition-colors whitespace-nowrap">
+            Người Đồng Hành
+          </span>
+        </button>
+
+        {/* Center: Primary Navigation */}
+        <nav aria-label="Điều hướng chính" className="hidden md:flex items-center gap-6 lg:gap-7 h-full">
+          {NAV_ITEMS.map((item) => {
             if (item.external) {
               return (
                 <a
@@ -67,105 +78,118 @@ export const Header: React.FC<HeaderProps> = ({
                   href={item.path}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 lg:px-3.5 py-1.5 text-sm font-bold border-2 transition-all bg-transparent text-gray-700 dark:text-gray-200 border-transparent hover:border-[#111111] dark:hover:border-gray-500 hover:bg-black/5 dark:hover:bg-white/5"
+                  className="inline-flex items-center gap-1 h-full border-b-2 border-transparent text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] transition-colors whitespace-nowrap"
                 >
-                  <item.icon className="w-4 h-4" />
                   <span>{item.label}</span>
+                  <ExternalLink className="w-3.5 h-3.5 opacity-60" />
                 </a>
               );
             }
 
-            const isActive =
-              item.path === '/'
-                ? currentPath === '/'
-                : currentPath.startsWith(item.path);
-
+            const active = isNavActive(item.path);
             return (
               <button
                 key={item.path}
+                type="button"
                 onClick={() => handleNavClick(item.path)}
-                className={`flex items-center gap-1.5 px-3 lg:px-3.5 py-1.5 text-sm font-bold border-2 transition-all ${
-                  isActive
-                    ? 'bg-[#4169E1] text-white border-[#111111] dark:border-white shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA]'
-                    : 'bg-transparent text-gray-700 dark:text-gray-200 border-transparent hover:border-[#111111] dark:hover:border-gray-500 hover:bg-black/5 dark:hover:bg-white/5'
+                aria-current={active ? 'page' : undefined}
+                className={`inline-flex items-center h-full border-b-2 text-sm transition-colors whitespace-nowrap cursor-pointer ${
+                  active
+                    ? 'border-[#4168E1] dark:border-[#5B7FF0] text-[#4168E1] dark:text-[#5B7FF0] font-semibold'
+                    : 'border-transparent text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:border-[#CBD5E1] dark:hover:border-[#334155] font-medium'
                 }`}
               >
-                <item.icon className="w-4 h-4" />
-                <span>{item.label}</span>
+                {item.label}
               </button>
             );
           })}
         </nav>
 
-        {/* Right Controls: Search, Theme Toggle, Mobile Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Quick Search Button */}
+        {/* Right: Search, Theme Toggle & Mobile Menu */}
+        <div className="flex items-center gap-2 shrink-0">
           <button
+            type="button"
             onClick={onOpenSearch}
-            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 text-xs font-bold bg-[#FFD93D] text-[#111111] brutal-border shadow-[2px_2px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[1px] active:translate-y-[1px] transition-all"
-            title="Tìm kiếm bài viết hoặc công cụ (Phím tắt: Ctrl + K)"
+            className="inline-flex items-center gap-2 h-9 px-2.5 sm:px-3 rounded-lg border border-[#E2E8F0] dark:border-[#334155] bg-[#F8FAFC] dark:bg-[#0B1120] text-sm text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:border-[#4168E1] dark:hover:border-[#5B7FF0] transition-colors cursor-pointer"
+            title="Tìm kiếm (Ctrl + K)"
+            aria-label="Tìm kiếm bài viết và công cụ"
           >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Tìm kiếm</span>
-            <kbd className="hidden lg:inline px-1 py-0.2 bg-black/10 rounded text-[10px] font-mono">⌘K</kbd>
+            <Search className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline text-xs font-medium">Tìm kiếm</span>
+            <kbd className="hidden lg:inline-block text-[11px] text-[#64748B] dark:text-[#94A3B8] pl-1 border-l border-[#E2E8F0] dark:border-[#334155] tabular-nums">
+              ⌘K
+            </kbd>
           </button>
 
-          {/* Dark / Light Mode Toggle */}
           <button
+            type="button"
             onClick={onToggleTheme}
-            aria-label="Chuyển đổi giao diện sáng/tối"
-            className="p-1.5 bg-white dark:bg-[#181B22] text-[#111111] dark:text-[#FFD93D] brutal-border shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] hover:translate-x-[-1px] hover:translate-y-[-1px] active:translate-x-[1px] active:translate-y-[1px] transition-all"
+            aria-label={theme === 'dark' ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+            title={theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
+            className="inline-flex items-center justify-center w-9 h-9 rounded-lg border border-[#E2E8F0] dark:border-[#334155] bg-white dark:bg-[#111827] text-[#64748B] dark:text-[#94A3B8] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] hover:border-[#4168E1] dark:hover:border-[#5B7FF0] transition-colors cursor-pointer"
           >
             {theme === 'dark' ? (
-              <Sun className="w-4 h-4 stroke-[2.5]" />
+              <Sun className="w-4 h-4" />
             ) : (
-              <Moon className="w-4 h-4 stroke-[2.5]" />
+              <Moon className="w-4 h-4" />
             )}
           </button>
 
-          {/* Mobile Hamburger Toggle */}
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-1.5 bg-white dark:bg-[#181B22] brutal-border shadow-[2px_2px_0_#111]"
-            aria-label="Mở danh mục điều hướng"
+            type="button"
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+            className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg border border-[#E2E8F0] dark:border-[#334155] bg-white dark:bg-[#111827] text-[#0F172A] dark:text-[#F8FAFC] hover:border-[#4168E1] dark:hover:border-[#5B7FF0] transition-colors cursor-pointer"
+            aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+            aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-3 pt-3 border-t-2 border-black dark:border-white/20 flex flex-col gap-2">
-          {navItems.map((item) =>
-            item.external ? (
-              <a
-                key={item.path}
-                href={item.path}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2.5 px-4 py-2 text-sm font-bold border-2 text-left bg-white dark:bg-[#181B22] border-black dark:border-gray-600"
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </a>
-            ) : (
-              <button
-                key={item.path}
-                onClick={() => handleNavClick(item.path)}
-                className={`flex items-center gap-2.5 px-4 py-2 text-sm font-bold border-2 text-left ${
-                  currentPath === item.path
-                    ? 'bg-[#4169E1] text-white border-black'
-                    : 'bg-white dark:bg-[#181B22] border-black dark:border-gray-600'
-                }`}
-              >
-                <item.icon className="w-4 h-4" />
-                <span>{item.label}</span>
-              </button>
-            )
-          )}
-        </div>
+        <nav
+          aria-label="Điều hướng di động"
+          className="md:hidden border-t border-[#E2E8F0] dark:border-[#1E293B] bg-white dark:bg-[#111827] px-4 py-3"
+        >
+          <div className="flex flex-col gap-1">
+            {NAV_ITEMS.map((item) => {
+              if (item.external) {
+                return (
+                  <a
+                    key={item.path}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/60 hover:text-[#0F172A] dark:hover:text-[#F8FAFC] transition-colors"
+                  >
+                    <span>{item.label}</span>
+                    <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                  </a>
+                );
+              }
+
+              const active = isNavActive(item.path);
+              return (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => handleNavClick(item.path)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm text-left transition-colors cursor-pointer ${
+                    active
+                      ? 'bg-[#4168E1]/10 dark:bg-[#5B7FF0]/15 text-[#4168E1] dark:text-[#5B7FF0] font-semibold'
+                      : 'text-[#0F172A] dark:text-[#F8FAFC] hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/60 font-medium'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       )}
     </header>
   );

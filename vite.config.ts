@@ -211,7 +211,7 @@ ${jsonLdString}
     </script>`;
 
   return baseHtml.replace(
-    /<title>[\s\S]*?<\/script>(?=\s*<!-- Google Fonts)/,
+    /<title>[\s\S]*?<\/script>(?=\s*<!-- KaTeX CSS)/,
     seoHeadBlock
   );
 }

@@ -1,17 +1,24 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
-import { Calendar, Clock, ArrowLeft, ArrowRight, Share2, Check, ListTree, User, ChevronDown, ChevronUp, Copy, BookOpen, X } from 'lucide-react';
-import { marked, Marked } from 'marked';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Share2,
+  Check,
+  ListTree,
+  BookOpen,
+  X,
+} from 'lucide-react';
+import { Marked } from 'marked';
 import katex from 'katex';
-import { Post, TocItem } from '../types';
+import { TocItem } from '../types';
 import { POSTS } from '../data/posts';
-import { TagBadge } from '../components/TagBadge';
+import { CoverImage } from '../components/CoverImage';
 
 interface ArticleDetailViewProps {
   slug: string;
   onNavigate: (path: string) => void;
 }
 
-// Helper to escape HTML characters in raw code blocks
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, '&amp;')
@@ -21,102 +28,119 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#39;');
 }
 
-// Process Markdown with LaTeX and Custom Code Blocks
-function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc: TocItem[] } {
+function slugifyHeading(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s\u00C0-\u024F\u1EA0-\u1EF9]/gi, '')
+    .replace(/\s+/g, '-');
+}
+
+function renderMarkdownWithLatexAndCode(rawContent: string): {
+  html: string;
+  toc: TocItem[];
+} {
   const headings: TocItem[] = [];
 
-  // Extract headings for Table of Contents
+  // Extract headings for Table of Contents (skip fenced code blocks)
   const lines = rawContent.split('\n');
+  let inCodeFence = false;
   lines.forEach((line) => {
+    if (line.trim().startsWith('```')) {
+      inCodeFence = !inCodeFence;
+      return;
+    }
+    if (inCodeFence) return;
+
     const h2Match = line.match(/^##\s+(.*)$/);
     const h3Match = line.match(/^###\s+(.*)$/);
     if (h2Match) {
       const text = h2Match[1].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^\w\s\u00C0-\u024F\u1EA0-\u1EF9]/gi, '')
-        .replace(/\s+/g, '-');
-      headings.push({ id, text, level: 2 });
+      headings.push({ id: slugifyHeading(text), text, level: 2 });
     } else if (h3Match) {
       const text = h3Match[1].trim();
-      const id = text
-        .toLowerCase()
-        .replace(/[^\w\s\u00C0-\u024F\u1EA0-\u1EF9]/gi, '')
-        .replace(/\s+/g, '-');
-      headings.push({ id, text, level: 3 });
+      headings.push({ id: slugifyHeading(text), text, level: 3 });
     }
   });
 
   // Step 1: Protect code blocks & inline code from LaTeX regex parsing
   const codeBlocks: string[] = [];
-  const protectedContent = rawContent.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (match) => {
-    const placeholder = `%%PROTECTED_CODE_TOKEN_${codeBlocks.length}%%`;
-    codeBlocks.push(match);
-    return placeholder;
-  });
+  const protectedContent = rawContent.replace(
+    /(```[\s\S]*?```|`[^`\n]+`)/g,
+    (match) => {
+      const placeholder = `%%PROTECTED_CODE_TOKEN_${codeBlocks.length}%%`;
+      codeBlocks.push(match);
+      return placeholder;
+    }
+  );
 
   // Step 2: Render block math $$ ... $$
-  let mathProcessed = protectedContent.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-    try {
-      const rendered = katex.renderToString(math.trim(), {
-        displayMode: true,
-        throwOnError: false,
-      });
-      return `\n\n<div class="katex-block-wrapper my-6 p-4 overflow-x-auto text-center bg-[#FAFAF5] dark:bg-[#151922] brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA] select-all">${rendered}</div>\n\n`;
-    } catch {
-      return `\n\n<pre class="katex-error text-red-500 font-mono text-xs">${escapeHtml(math)}</pre>\n\n`;
+  let mathProcessed = protectedContent.replace(
+    /\$\$([\s\S]+?)\$\$/g,
+    (_, math) => {
+      try {
+        const rendered = katex.renderToString(math.trim(), {
+          displayMode: true,
+          throwOnError: false,
+        });
+        return `\n\n<div class="katex-block-wrapper my-6 px-4 py-4 overflow-x-auto text-center bg-[#F8FAFC] dark:bg-[#0B1120] border border-[#E2E8F0] dark:border-[#1E293B] rounded-lg select-all">${rendered}</div>\n\n`;
+      } catch {
+        return `\n\n<pre class="katex-error text-red-600 dark:text-red-400 text-xs">${escapeHtml(math)}</pre>\n\n`;
+      }
     }
-  });
+  );
 
   // Step 3: Render inline math $ ... $ (excluding escaped \$)
-  mathProcessed = mathProcessed.replace(/(?<!\\)\$([^\$\n]+?)(?<!\\)\$/g, (_, math) => {
-    try {
-      const rendered = katex.renderToString(math.trim(), {
-        displayMode: false,
-        throwOnError: false,
-      });
-      return `<span class="katex-inline px-1 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-black dark:text-blue-100 font-serif">${rendered}</span>`;
-    } catch {
-      return `<code class="katex-error text-red-500">${escapeHtml(math)}</code>`;
+  mathProcessed = mathProcessed.replace(
+    /(?<!\\)\$([^\$\n]+?)(?<!\\)\$/g,
+    (_, math) => {
+      try {
+        const rendered = katex.renderToString(math.trim(), {
+          displayMode: false,
+          throwOnError: false,
+        });
+        return `<span class="katex-inline px-1 py-0.5 rounded bg-[#F1F5F9] dark:bg-[#1E293B] text-[#0F172A] dark:text-[#F8FAFC]">${rendered}</span>`;
+      } catch {
+        return `<code class="katex-error text-red-600 dark:text-red-400">${escapeHtml(math)}</code>`;
+      }
     }
-  });
+  );
 
   // Step 4: Restore protected code blocks
-  const restored = mathProcessed.replace(/%%PROTECTED_CODE_TOKEN_(\d+)%%/g, (_, idx) => {
-    return codeBlocks[Number(idx)];
-  });
+  const restored = mathProcessed.replace(
+    /%%PROTECTED_CODE_TOKEN_(\d+)%%/g,
+    (_, idx) => codeBlocks[Number(idx)]
+  );
 
-  // Step 5: Configure marked with Custom Code Renderer (Header + Language + Copy Button)
-  const customMarked = new Marked();
+  // Step 5: Configure marked v18 with clean editorial renderers
+  const customMarked = new Marked({
+    gfm: true,
+    breaks: true,
+  });
 
   customMarked.use({
     renderer: {
       code(arg: any, langStr?: string) {
         const text = typeof arg === 'string' ? arg : arg.text || '';
-        const lang = typeof arg === 'string' ? (langStr || 'text') : (arg.lang || 'text');
+        const lang =
+          typeof arg === 'string' ? langStr || 'text' : arg.lang || 'text';
         const cleanLang = lang.trim().toLowerCase() || 'code';
         const encodedCode = encodeURIComponent(text);
 
         return `
-          <div class="code-block-container my-6 brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA] overflow-hidden bg-[#0F1115] text-gray-100">
-            <div class="flex items-center justify-between px-3.5 py-2 bg-[#1A1E26] border-b-2 border-black dark:border-white/20 select-none">
-              <div class="flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-[#FF6B9D] border border-black inline-block"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-[#FFD93D] border border-black inline-block"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-[#4ADE80] border border-black inline-block"></span>
-                <span class="ml-2 font-mono text-[11px] font-bold uppercase tracking-wider text-gray-300">${escapeHtml(cleanLang)}</span>
-              </div>
+          <div class="code-block-container my-6 border border-[#1E293B] rounded-lg overflow-hidden bg-[#0F172A] text-[#F8FAFC]">
+            <div class="flex items-center justify-between px-4 py-2 bg-[#111827] border-b border-[#1E293B] select-none">
+              <span class="text-xs font-medium uppercase tracking-wider text-[#94A3B8]">${escapeHtml(cleanLang)}</span>
               <button
                 type="button"
-                class="copy-code-btn inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold bg-[#FFD93D] hover:bg-[#FFE57F] text-black brutal-border cursor-pointer transition-transform active:translate-x-[1px] active:translate-y-[1px]"
+                class="copy-code-btn inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-[#1E293B] hover:bg-[#334155] text-[#F8FAFC] border border-[#334155] cursor-pointer transition-colors"
                 data-code="${encodedCode}"
-                title="Sao chép toàn bộ mã nguồn"
+                title="Sao chép mã nguồn"
               >
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                 <span class="copy-btn-text">Sao chép</span>
               </button>
             </div>
-            <pre class="p-4 overflow-x-auto text-xs sm:text-sm font-mono leading-relaxed text-gray-200"><code>${escapeHtml(text)}</code></pre>
+            <pre class="p-4 overflow-x-auto text-xs sm:text-sm leading-relaxed text-[#E2E8F0]"><code>${escapeHtml(text)}</code></pre>
           </div>
         `;
       },
@@ -126,21 +150,9 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
           : String(token.text || '');
         const level = token.depth || 1;
         const plainText = String(token.text || '').replace(/<[^>]*>/g, '');
-        const id = plainText
-          .toLowerCase()
-          .replace(/[^\w\s\u00C0-\u024F\u1EA0-\u1EF9]/gi, '')
-          .replace(/\s+/g, '-');
+        const id = slugifyHeading(plainText);
 
-        if (level === 1) {
-          return `<h1 id="${id}" class="text-2xl sm:text-3xl font-black mt-8 mb-4 border-b-2 border-black dark:border-white/20 pb-2">${renderedText}</h1>`;
-        }
-        if (level === 2) {
-          return `<h2 id="${id}" class="text-xl sm:text-2xl font-extrabold mt-8 mb-3 text-[#4169E1] dark:text-[#60A5FA] flex items-center gap-2"><span>#</span><span>${renderedText}</span></h2>`;
-        }
-        if (level === 3) {
-          return `<h3 id="${id}" class="text-lg font-bold mt-6 mb-2 text-[#111111] dark:text-gray-100">${renderedText}</h3>`;
-        }
-        return `<h${level} id="${id}" class="font-bold my-4">${renderedText}</h${level}>`;
+        return `<h${level} id="${id}">${renderedText}</h${level}>`;
       },
       table(this: any, token: any) {
         let headerCells = '';
@@ -152,7 +164,7 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
                 ? 'text-right'
                 : 'text-left';
           const cellHtml = this.parser.parseInline(cell.tokens);
-          headerCells += `<th class="bg-[#FFD93D] text-black px-3.5 py-2.5 border-b-2 border-r border-black last:border-r-0 font-black text-xs uppercase tracking-wide ${alignClass}">${cellHtml}</th>`;
+          headerCells += `<th class="bg-[#F8FAFC] dark:bg-[#0B1120] text-[#0F172A] dark:text-[#F8FAFC] px-4 py-3 border-b border-r border-[#E2E8F0] dark:border-[#1E293B] last:border-r-0 font-semibold text-xs sm:text-sm ${alignClass}">${cellHtml}</th>`;
         }
 
         let bodyRows = '';
@@ -166,14 +178,14 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
                   ? 'text-right'
                   : 'text-left';
             const cellHtml = this.parser.parseInline(cell.tokens);
-            rowCells += `<td class="px-3.5 py-2.5 border-b border-r border-black/20 dark:border-white/15 last:border-r-0 text-xs sm:text-sm align-top ${alignClass}">${cellHtml}</td>`;
+            rowCells += `<td class="px-4 py-3 border-b border-r border-[#E2E8F0] dark:border-[#1E293B] last:border-r-0 text-sm align-top tabular-nums ${alignClass}">${cellHtml}</td>`;
           }
-          bodyRows += `<tr class="even:bg-[#FAFAF5] dark:even:bg-[#1B202C] hover:bg-blue-50/50 dark:hover:bg-blue-950/20 transition-colors">${rowCells}</tr>`;
+          bodyRows += `<tr class="hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/40 transition-colors">${rowCells}</tr>`;
         }
 
         return `
-          <div class="table-responsive-wrapper my-6 overflow-x-auto max-w-full brutal-border shadow-[3px_3px_0_#111] dark:shadow-[3px_3px_0_#60A5FA]">
-            <table class="w-full min-w-[420px] border-collapse bg-white dark:bg-[#151922] text-[#111111] dark:text-gray-100">
+          <div class="table-responsive-wrapper my-6 overflow-x-auto max-w-full border border-[#E2E8F0] dark:border-[#1E293B] rounded-lg">
+            <table class="w-full min-w-[420px] border-collapse bg-white dark:bg-[#111827] text-[#0F172A] dark:text-[#F8FAFC]">
               <thead>
                 <tr>${headerCells}</tr>
               </thead>
@@ -183,8 +195,8 @@ function renderMarkdownWithLatexAndCode(rawContent: string): { html: string; toc
             </table>
           </div>
         `;
-      }
-    }
+      },
+    },
   });
 
   const parsedHtml = customMarked.parse(restored, { async: false }) as string;
@@ -206,7 +218,6 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   const prevPost = postIndex > 0 ? POSTS[postIndex - 1] : null;
   const nextPost = postIndex < POSTS.length - 1 ? POSTS[postIndex + 1] : null;
 
-  // Compute parsed HTML with LaTeX & Code buttons
   const { toc, html: htmlContent } = useMemo(() => {
     if (!post) return { toc: [] as TocItem[], html: '' };
     return renderMarkdownWithLatexAndCode(post.content);
@@ -216,26 +227,22 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [slug]);
 
-  // Monitor scroll for floating TOC button
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 400) {
-        setHasScrolled(true);
-      } else {
-        setHasScrolled(false);
-      }
+      setHasScrolled(window.scrollY > 360);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Event Delegation for Copy Buttons in Code Blocks
   useEffect(() => {
     const container = contentRef.current;
     if (!container) return;
 
     const handleCopyClick = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest('.copy-code-btn') as HTMLElement | null;
+      const target = (e.target as HTMLElement).closest(
+        '.copy-code-btn'
+      ) as HTMLElement | null;
       if (!target) return;
 
       const encoded = target.getAttribute('data-code');
@@ -246,13 +253,13 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         const textSpan = target.querySelector('.copy-btn-text');
         const originalText = textSpan ? textSpan.textContent : 'Sao chép';
 
-        target.classList.remove('bg-[#FFD93D]', 'hover:bg-[#FFE57F]');
-        target.classList.add('bg-[#4ADE80]');
-        if (textSpan) textSpan.textContent = '✓ Đã chép!';
+        target.classList.remove('bg-[#1E293B]', 'hover:bg-[#334155]');
+        target.classList.add('bg-[#4168E1]', 'border-[#4168E1]');
+        if (textSpan) textSpan.textContent = 'Đã sao chép';
 
         setTimeout(() => {
-          target.classList.remove('bg-[#4ADE80]');
-          target.classList.add('bg-[#FFD93D]', 'hover:bg-[#FFE57F]');
+          target.classList.remove('bg-[#4168E1]', 'border-[#4168E1]');
+          target.classList.add('bg-[#1E293B]', 'hover:bg-[#334155]');
           if (textSpan) textSpan.textContent = originalText || 'Sao chép';
         }, 2000);
       });
@@ -266,14 +273,17 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
 
   if (!post) {
     return (
-      <div className="p-12 text-center bg-white dark:bg-[#181B22] brutal-card max-w-lg mx-auto space-y-4">
-        <h2 className="text-2xl font-black">Bài viết không tồn tại</h2>
-        <p className="text-sm text-gray-500">
-          Đường dẫn không hợp lệ hoặc bài viết đã được cập nhật lại slug.
+      <div className="max-w-lg mx-auto py-12 px-6 text-center bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] rounded-xl space-y-4">
+        <h2 className="text-xl font-bold text-[#0F172A] dark:text-[#F8FAFC]">
+          Bài viết không tồn tại
+        </h2>
+        <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+          Đường dẫn không hợp lệ hoặc bài viết đã được cập nhật lại địa chỉ.
         </p>
         <button
+          type="button"
           onClick={() => onNavigate('/')}
-          className="px-4 py-2 bg-[#FFD93D] text-black font-bold text-xs brutal-btn"
+          className="px-4 py-2 rounded-lg text-sm font-medium bg-[#4168E1] hover:bg-[#3154C4] dark:bg-[#5B7FF0] dark:hover:bg-[#7695F5] text-white transition-colors cursor-pointer"
         >
           Quay lại trang chủ
         </button>
@@ -282,8 +292,7 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   }
 
   const handleShare = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(window.location.href);
     setCopiedShare(true);
     setTimeout(() => setCopiedShare(false), 2000);
   };
@@ -297,148 +306,157 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
   };
 
   return (
-    <article className="max-w-4xl mx-auto space-y-6 sm:space-y-8 w-full max-w-full overflow-hidden">
-      {/* Back to Home Button & Share Button */}
-      <div className="flex items-center justify-between gap-2">
+    <article className="max-w-3xl mx-auto space-y-8 w-full">
+      {/* Top Action Row */}
+      <div className="flex items-center justify-between gap-3">
         <button
+          type="button"
           onClick={() => onNavigate('/')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white dark:bg-[#181B22] brutal-border shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] hover:bg-[#FFD93D] hover:text-black transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:text-[#4168E1] dark:hover:text-[#5B7FF0] transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Về danh sách bài viết</span>
-          <span className="sm:hidden">Bài viết</span>
+          <span>Về danh sách bài viết</span>
         </button>
 
         <button
+          type="button"
           onClick={handleShare}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#FFD93D] text-black brutal-border shadow-[2px_2px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px] transition-all"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-[#E2E8F0] dark:border-[#334155] bg-white dark:bg-[#111827] text-[#0F172A] dark:text-[#F8FAFC] hover:border-[#4168E1] dark:hover:border-[#5B7FF0] transition-colors cursor-pointer"
         >
-          {copiedShare ? <Check className="w-4 h-4 text-green-700" /> : <Share2 className="w-4 h-4" />}
-          <span>{copiedShare ? 'Đã sao chép link!' : 'Chia sẻ'}</span>
+          {copiedShare ? (
+            <Check className="w-3.5 h-3.5 text-[#4168E1] dark:text-[#5B7FF0]" />
+          ) : (
+            <Share2 className="w-3.5 h-3.5" />
+          )}
+          <span>{copiedShare ? 'Đã sao chép liên kết' : 'Chia sẻ'}</span>
         </button>
       </div>
 
-      {/* Header Container */}
-      <header className="p-4 sm:p-8 bg-white dark:bg-[#181B22] brutal-card space-y-4">
-        <div className="flex flex-wrap gap-2">
-          {post.tags.map((t) => (
-            <TagBadge key={t} tag={t} onClick={() => onNavigate(`/tag/${t}`)} />
-          ))}
-        </div>
+      {/* Main Flat Editorial Sheet */}
+      <div className="bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] rounded-xl p-6 sm:p-10 space-y-8">
+        {/* Article Header */}
+        <header className="space-y-4 pb-6 border-b border-[#E2E8F0] dark:border-[#1E293B]">
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm font-medium text-[#4168E1] dark:text-[#5B7FF0]">
+              {post.tags.map((tag, index) => (
+                <React.Fragment key={tag}>
+                  {index > 0 && (
+                    <span aria-hidden="true" className="text-[#94A3B8]">
+                      ·
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(`/tag/${encodeURIComponent(tag)}`)}
+                    className="hover:text-[#3154C4] dark:hover:text-[#7695F5] hover:underline underline-offset-4 transition-colors cursor-pointer"
+                  >
+                    {tag}
+                  </button>
+                </React.Fragment>
+              ))}
+            </div>
+          )}
 
-        <h1 className="text-2xl sm:text-4xl font-black text-[#111111] dark:text-white leading-tight">
-          {post.title}
-        </h1>
+          <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC] leading-tight text-balance">
+            {post.title}
+          </h1>
 
-        <p className="text-base font-medium text-gray-600 dark:text-gray-300">
-          {post.description}
-        </p>
+          {post.description && (
+            <p className="text-base sm:text-lg text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+              {post.description}
+            </p>
+          )}
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs font-bold text-gray-500 dark:text-gray-400 pt-3 border-t border-black/10 dark:border-white/10">
-          <span className="flex items-center gap-1.5 text-black dark:text-white">
-            <User className="w-3.5 h-3.5 text-[#4169E1] dark:text-[#60A5FA]" />
-            <span>Tác giả: Hoàng Lam</span>
-          </span>
-          <span className="hidden sm:inline">·</span>
-          <span className="flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>{post.pubDate}</span>
-          </span>
-          <span className="hidden sm:inline">·</span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" />
-            <span>~{post.readingTimeMinutes} phút đọc</span>
-          </span>
-        </div>
-      </header>
-
-      {/* Main Content Area: FULL WIDTH (max-w-4xl) */}
-      <main className="p-4 sm:p-8 md:p-10 bg-white dark:bg-[#181B22] brutal-card w-full max-w-full overflow-hidden">
-        {post.cover && (
-          <div className="mb-8 overflow-hidden brutal-border max-h-[460px]">
-            <img
-              src={post.cover}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 pt-2 text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] tabular-nums">
+            <span className="font-medium text-[#0F172A] dark:text-[#F8FAFC]">
+              Hoàng Lam
+            </span>
+            <span aria-hidden="true">·</span>
+            <time dateTime={post.pubDate}>{post.pubDate}</time>
+            <span aria-hidden="true">·</span>
+            <span>{post.readingTimeMinutes} phút đọc</span>
           </div>
-        )}
+        </header>
 
-        {/* Custom Styled Markdown Body with LaTeX & Code Blocks */}
+        {/* 16:9 Cover Image (with automatic fallback if missing/broken) */}
+        <CoverImage
+          src={post.cover}
+          alt={post.title}
+          category={post.tags[0]}
+          priority
+        />
+
+        {/* Markdown Body */}
         <div
           ref={contentRef}
-          className="prose prose-slate dark:prose-invert max-w-none text-base sm:text-[17px] leading-relaxed
-            [&>h1]:text-2xl [&>h1]:font-black [&>h1]:mt-8 [&>h1]:mb-4 [&>h1]:border-b-2 [&>h1]:border-black dark:[&>h1]:border-white/20 [&>h1]:pb-2
-            [&>h2]:text-xl [&>h2]:font-extrabold [&>h2]:mt-8 [&>h2]:mb-3 [&>h2]:text-[#4169E1] dark:[&>h2]:text-[#60A5FA]
-            [&>h3]:text-lg [&>h3]:font-bold [&>h3]:mt-6 [&>h3]:mb-2
-            [&>p]:my-4 [&>p]:leading-relaxed
-            [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:my-4 [&>ul>li]:my-1.5
-            [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:my-4 [&>ol>li]:my-1.5
-            [&>blockquote]:border-l-[4px] [&>blockquote]:border-[#4169E1] [&>blockquote]:bg-blue-50/70 dark:[&>blockquote]:bg-[#1A2234] [&>blockquote]:p-4 [&>blockquote]:my-6 [&>blockquote]:italic [&>blockquote]:font-medium [&>blockquote]:brutal-border-r-none
-            [&>hr]:border-t-2 [&>hr]:border-black/20 dark:[&>hr]:border-white/20 [&>hr]:my-8"
+          className="editorial-prose max-w-none"
           dangerouslySetInnerHTML={{ __html: htmlContent }}
         />
-      </main>
+      </div>
 
-      {/* FLOATING QUICK TABLE OF CONTENTS BUTTON & DRAWER */}
+      {/* Floating Quick TOC Button & Modal */}
       {toc.length > 0 && (
         <>
           <div
-            className={`fixed bottom-6 right-6 z-40 transition-all duration-300 ${
-              hasScrolled ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+            className={`fixed bottom-6 right-6 z-40 transition-all duration-200 ${
+              hasScrolled
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-3 pointer-events-none'
             }`}
           >
             <button
-              onClick={() => setShowFloatingToc(!showFloatingToc)}
-              className="flex items-center gap-2 px-3.5 py-2.5 bg-[#4169E1] text-white font-black text-xs brutal-border shadow-[3px_3px_0_#111] hover:bg-[#3154b8] active:translate-x-[2px] active:translate-y-[2px]"
-              aria-label="Xem nhanh mục lục"
+              type="button"
+              onClick={() => setShowFloatingToc((prev) => !prev)}
+              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-[#4168E1] hover:bg-[#3154C4] dark:bg-[#5B7FF0] dark:hover:bg-[#7695F5] text-white text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+              aria-label="Mở mục lục bài viết"
             >
               <BookOpen className="w-4 h-4" />
               <span>Mục lục</span>
             </button>
           </div>
 
-          {/* Quick TOC Popover Modal */}
           {showFloatingToc && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+            <div
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/45 dark:bg-black/65 backdrop-blur-xs"
+              onClick={() => setShowFloatingToc(false)}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Mục lục bài viết"
+            >
               <div
-                className="w-full max-w-md bg-white dark:bg-[#181B22] brutal-card shadow-[6px_6px_0_#111] dark:shadow-[6px_6px_0_#60A5FA] max-h-[80vh] flex flex-col"
+                className="w-full max-w-md bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#334155] rounded-xl max-h-[80vh] flex flex-col overflow-hidden"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between p-4 bg-[#FFD93D] text-black border-b-2 border-black">
-                  <div className="flex items-center gap-2 font-black text-sm uppercase">
-                    <ListTree className="w-4 h-4" />
+                <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2E8F0] dark:border-[#1E293B]">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC]">
+                    <ListTree className="w-4 h-4 text-[#4168E1] dark:text-[#5B7FF0]" />
                     <span>Mục lục bài viết</span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setShowFloatingToc(false)}
-                    className="p-1 hover:bg-black/10 rounded-none transition-colors"
+                    className="p-1 text-[#64748B] hover:text-[#0F172A] dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] transition-colors cursor-pointer"
+                    aria-label="Đóng mục lục"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
-                <div className="p-4 overflow-y-auto space-y-1.5 flex-1">
+
+                <div className="p-3 overflow-y-auto space-y-0.5 flex-1">
                   {toc.map((item, idx) => (
                     <button
-                      key={idx}
+                      key={`${item.id}-${idx}`}
+                      type="button"
                       onClick={() => scrollToHeading(item.id)}
-                      className={`block w-full text-left p-2 rounded-none hover:bg-blue-50 dark:hover:bg-blue-950/30 text-xs sm:text-sm transition-all ${
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/60 hover:text-[#4168E1] dark:hover:text-[#5B7FF0] transition-colors cursor-pointer ${
                         item.level === 3
-                          ? 'pl-6 text-gray-600 dark:text-gray-400'
-                          : 'font-bold text-black dark:text-white'
+                          ? 'pl-7 text-[#64748B] dark:text-[#94A3B8]'
+                          : 'font-medium text-[#0F172A] dark:text-[#F8FAFC]'
                       }`}
                     >
-                      • {item.text}
+                      {item.text}
                     </button>
                   ))}
-                </div>
-                <div className="p-3 bg-gray-50 dark:bg-[#14171F] border-t-2 border-black dark:border-white/20 text-center">
-                  <button
-                    onClick={() => setShowFloatingToc(false)}
-                    className="px-4 py-1.5 text-xs font-bold bg-white dark:bg-[#181B22] brutal-border hover:bg-[#FFD93D] hover:text-black transition-colors"
-                  >
-                    Đóng
-                  </button>
                 </div>
               </div>
             </div>
@@ -446,42 +464,49 @@ export const ArticleDetailView: React.FC<ArticleDetailViewProps> = ({
         </>
       )}
 
-      {/* Previous / Next Article Navigation */}
-      <nav className="flex flex-col sm:flex-row justify-between items-stretch gap-4 pt-6 border-t-2 border-black/10 dark:border-white/10">
-        {prevPost ? (
-          <button
-            onClick={() => onNavigate(`/${prevPost.slug}`)}
-            className="flex-1 p-4 bg-white dark:bg-[#181B22] brutal-card brutal-card-hover text-left flex items-center gap-3"
-          >
-            <div className="p-2 bg-[#FFD93D] text-black brutal-border shrink-0">
-              <ArrowLeft className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-gray-500">Bài trước</span>
-              <p className="text-xs sm:text-sm font-bold line-clamp-1">{prevPost.title}</p>
-            </div>
-          </button>
-        ) : (
-          <div className="flex-1" />
-        )}
+      {/* Previous / Next Navigation */}
+      {(prevPost || nextPost) && (
+        <nav
+          aria-label="Bài viết liên quan"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2"
+        >
+          {prevPost ? (
+            <button
+              type="button"
+              onClick={() => onNavigate(`/${prevPost.slug}`)}
+              className="p-4 bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#4168E1]/60 dark:hover:border-[#5B7FF0]/60 rounded-xl text-left transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center gap-1.5 text-xs text-[#64748B] dark:text-[#94A3B8] mb-1">
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Bài trước</span>
+              </div>
+              <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] line-clamp-2 transition-colors">
+                {prevPost.title}
+              </p>
+            </button>
+          ) : (
+            <div className="hidden sm:block" />
+          )}
 
-        {nextPost ? (
-          <button
-            onClick={() => onNavigate(`/${nextPost.slug}`)}
-            className="flex-1 p-4 bg-white dark:bg-[#181B22] brutal-card brutal-card-hover text-right flex items-center justify-end gap-3"
-          >
-            <div>
-              <span className="text-[10px] uppercase font-bold text-gray-500">Bài tiếp theo</span>
-              <p className="text-xs sm:text-sm font-bold line-clamp-1">{nextPost.title}</p>
-            </div>
-            <div className="p-2 bg-[#4ADE80] text-black brutal-border shrink-0">
-              <ArrowRight className="w-4 h-4" />
-            </div>
-          </button>
-        ) : (
-          <div className="flex-1" />
-        )}
-      </nav>
+          {nextPost ? (
+            <button
+              type="button"
+              onClick={() => onNavigate(`/${nextPost.slug}`)}
+              className="p-4 bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#4168E1]/60 dark:hover:border-[#5B7FF0]/60 rounded-xl text-left sm:text-right transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center sm:justify-end gap-1.5 text-xs text-[#64748B] dark:text-[#94A3B8] mb-1">
+                <span>Bài tiếp theo</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </div>
+              <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] line-clamp-2 transition-colors">
+                {nextPost.title}
+              </p>
+            </button>
+          ) : (
+            <div className="hidden sm:block" />
+          )}
+        </nav>
+      )}
     </article>
   );
 };

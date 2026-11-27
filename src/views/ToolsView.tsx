@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
-import { Timer, FileText, PenTool, Calculator, BookOpen, ArrowRight, ExternalLink, Search, Sparkles, Gamepad2 } from 'lucide-react';
+import {
+  Timer,
+  FileText,
+  PenTool,
+  Calculator,
+  BookOpen,
+  ArrowRight,
+  ExternalLink,
+  Search,
+  Sparkles,
+  Gamepad2,
+} from 'lucide-react';
 import { Tool } from '../types';
 import { TOOLS, TOOL_CATEGORIES } from '../data/tools';
 
@@ -14,19 +25,19 @@ export const ToolsView: React.FC<ToolsViewProps> = ({ onNavigate }) => {
   const renderIcon = (iconName: string) => {
     switch (iconName) {
       case 'Gamepad2':
-        return <Gamepad2 className="w-6 h-6" />;
+        return <Gamepad2 className="w-5 h-5" />;
       case 'Timer':
-        return <Timer className="w-6 h-6" />;
+        return <Timer className="w-5 h-5" />;
       case 'FileText':
-        return <FileText className="w-6 h-6" />;
+        return <FileText className="w-5 h-5" />;
       case 'PenTool':
-        return <PenTool className="w-6 h-6" />;
+        return <PenTool className="w-5 h-5" />;
       case 'Calculator':
-        return <Calculator className="w-6 h-6" />;
+        return <Calculator className="w-5 h-5" />;
       case 'BookOpen':
-        return <BookOpen className="w-6 h-6" />;
+        return <BookOpen className="w-5 h-5" />;
       default:
-        return <Sparkles className="w-6 h-6" />;
+        return <Sparkles className="w-5 h-5" />;
     }
   };
 
@@ -49,84 +60,101 @@ export const ToolsView: React.FC<ToolsViewProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Search Bar & Category Filter Bar */}
-      <section className="p-4 sm:p-5 bg-white dark:bg-[#181B22] brutal-card space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-          <div className="relative flex-grow">
-            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+    <div className="space-y-8">
+      {/* Header & Filter Bar */}
+      <section className="space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-4 border-b border-[#E2E8F0] dark:border-[#1E293B]">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC]">
+            Công cụ học tập
+          </h1>
+          <span className="text-sm text-[#64748B] dark:text-[#94A3B8] tabular-nums">
+            {filteredTools.length} công cụ
+          </span>
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          {/* Category Filter */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {TOOL_CATEGORIES.map((cat) => {
+              const active = selectedCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm border transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
+                    active
+                      ? 'bg-[#4168E1] dark:bg-[#5B7FF0] text-white border-[#4168E1] dark:border-[#5B7FF0] font-semibold'
+                      : 'bg-white dark:bg-[#111827] text-[#64748B] dark:text-[#94A3B8] border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#4168E1] dark:hover:border-[#5B7FF0] hover:text-[#0F172A] dark:hover:text-[#F8FAFC] font-medium'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Search Input */}
+          <div className="relative w-full md:w-72 shrink-0">
+            <Search className="w-4 h-4 text-[#64748B] dark:text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Tìm kiếm công cụ học tập..."
-              className="w-full pl-9 pr-3 py-2 text-xs sm:text-sm font-bold bg-[#FAFAF5] dark:bg-[#12151C] brutal-border outline-hidden"
+              placeholder="Tìm kiếm công cụ..."
+              className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-[#111827] text-[#0F172A] dark:text-[#F8FAFC] placeholder:text-[#64748B] dark:placeholder:text-[#94A3B8] border border-[#E2E8F0] dark:border-[#334155] rounded-lg focus:border-[#4168E1] dark:focus:border-[#5B7FF0] outline-hidden transition-colors"
             />
           </div>
-
-          <div className="text-xs font-bold text-gray-500 shrink-0 self-end sm:self-center">
-            {filteredTools.length} công cụ
-          </div>
-        </div>
-
-        {/* Category Tags */}
-        <div className="flex flex-wrap gap-2 pt-1 border-t border-black/10 dark:border-white/10">
-          {TOOL_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`text-xs font-bold px-3 py-1.5 border-2 transition-all ${
-                selectedCategory === cat
-                  ? 'bg-[#4169E1] text-white border-black dark:border-white shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA]'
-                  : 'bg-white dark:bg-[#181B22] text-gray-700 dark:text-gray-300 border-black/30 hover:border-black'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
         </div>
       </section>
 
       {/* Tools Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTools.map((tool) => (
-          <div
-            key={tool.id}
-            onClick={() => handleToolClick(tool)}
-            className="p-6 bg-white dark:bg-[#181B22] brutal-card brutal-card-hover cursor-pointer flex flex-col justify-between group"
-          >
-            <div>
-              {/* Card Header */}
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <div className="p-3 bg-[#FFD93D] text-black brutal-border shadow-[2px_2px_0_#111] group-hover:scale-105 transition-transform">
+      {filteredTools.length > 0 ? (
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredTools.map((tool) => (
+            <article
+              key={tool.id}
+              onClick={() => handleToolClick(tool)}
+              className="h-full flex flex-col bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#4168E1]/60 dark:hover:border-[#5B7FF0]/60 rounded-xl p-6 transition-colors group cursor-pointer"
+            >
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#4168E1]/10 dark:bg-[#5B7FF0]/15 text-[#4168E1] dark:text-[#5B7FF0] flex items-center justify-center shrink-0">
                   {renderIcon(tool.icon)}
                 </div>
-                <span className="text-[11px] font-extrabold px-2 py-0.5 bg-[#FAFAF5] dark:bg-[#12151C] brutal-border text-gray-700 dark:text-gray-300">
+                <span className="text-xs font-medium text-[#4168E1] dark:text-[#5B7FF0]">
                   {tool.category}
                 </span>
               </div>
 
-              {/* Title & Description */}
-              <h3 className="text-lg font-black text-[#111111] dark:text-white group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA] transition-colors leading-snug">
+              <h2 className="text-base sm:text-lg font-bold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] transition-colors leading-snug">
                 {tool.name}
-              </h3>
-              <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 mt-2 line-clamp-3 leading-relaxed">
+              </h2>
+
+              <p className="text-sm text-[#64748B] dark:text-[#94A3B8] mt-2 line-clamp-3 leading-relaxed">
                 {tool.description}
               </p>
-            </div>
 
-            {/* Bottom Arrow Indicator (No 'Dùng ngay tại đây' or 'Mở trang ngoài ↗') */}
-            <div className="mt-5 pt-3 border-t border-black/10 dark:border-white/10 flex items-center justify-between text-xs font-bold text-gray-400 group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA]">
-              <span className="text-[11px] font-bold">Truy cập công cụ</span>
-              {tool.type === 'external' ? (
-                <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform text-[#4169E1] dark:text-[#60A5FA]" />
-              ) : (
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform text-[#4169E1] dark:text-[#60A5FA]" />
-              )}
-            </div>
-          </div>
-        ))}
-      </section>
+              <div className="mt-auto pt-5 flex items-center justify-between text-xs font-medium text-[#64748B] dark:text-[#94A3B8] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] transition-colors">
+                <span>Truy cập công cụ</span>
+                {tool.type === 'external' ? (
+                  <ExternalLink className="w-4 h-4" />
+                ) : (
+                  <ArrowRight className="w-4 h-4" />
+                )}
+              </div>
+            </article>
+          ))}
+        </section>
+      ) : (
+        <section className="py-12 px-6 text-center bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] rounded-xl space-y-2">
+          <p className="text-base font-semibold text-[#0F172A] dark:text-[#F8FAFC]">
+            Không tìm thấy công cụ phù hợp
+          </p>
+          <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+            Hãy thử thay đổi danh mục hoặc từ khóa tìm kiếm.
+          </p>
+        </section>
+      )}
     </div>
   );
 };

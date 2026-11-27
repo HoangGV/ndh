@@ -1,7 +1,6 @@
-import React from 'react';
-import { Tag, ArrowLeft, BookOpen } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { POSTS } from '../data/posts';
-import { TagBadge } from '../components/TagBadge';
 
 interface TagsViewProps {
   onNavigate: (path: string) => void;
@@ -9,59 +8,61 @@ interface TagsViewProps {
 }
 
 export const TagsView: React.FC<TagsViewProps> = ({ onNavigate, onSelectTag }) => {
-  // Compute tag frequencies
-  const tagCounts: Record<string, number> = {};
-  POSTS.forEach((post) => {
-    post.tags.forEach((t) => {
-      tagCounts[t] = (tagCounts[t] || 0) + 1;
+  const sortedTags = useMemo(() => {
+    const tagCounts: Record<string, number> = {};
+    POSTS.forEach((post) => {
+      post.tags.forEach((t) => {
+        tagCounts[t] = (tagCounts[t] || 0) + 1;
+      });
     });
-  });
-
-  const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+    return Object.entries(tagCounts).sort((a, b) => b[1] - a[1]);
+  }, []);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div>
         <button
+          type="button"
           onClick={() => onNavigate('/')}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-white dark:bg-[#181B22] brutal-border shadow-[2px_2px_0_#111] dark:shadow-[2px_2px_0_#60A5FA] hover:bg-[#FFD93D] hover:text-black transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-[#64748B] dark:text-[#94A3B8] hover:text-[#4168E1] dark:hover:text-[#5B7FF0] transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Về trang chủ</span>
         </button>
       </div>
 
-      <section className="p-6 sm:p-8 bg-white dark:bg-[#181B22] brutal-card space-y-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#A78BFA] text-black font-extrabold text-xs brutal-border shadow-[2px_2px_0_#111]">
-          <Tag className="w-3.5 h-3.5" />
-          <span>TAXONOMY · TẤT CẢ CHỦ ĐỀ</span>
+      <section className="pb-6 border-b border-[#E2E8F0] dark:border-[#1E293B] space-y-2">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0F172A] dark:text-[#F8FAFC]">
+            Tags và chủ đề bài viết
+          </h1>
+          <span className="text-sm text-[#64748B] dark:text-[#94A3B8] tabular-nums">
+            {sortedTags.length} chủ đề
+          </span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-[#111111] dark:text-white">
-          Tags và chủ đề bài viết
-        </h1>
-        <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
-          Khám phá tất cả các danh mục bài viết trên NDH được phân loại theo chủ đề để bạn dễ dàng theo dõi kiến thức chuyên sâu.
+        <p className="text-sm sm:text-base text-[#64748B] dark:text-[#94A3B8] max-w-2xl leading-relaxed">
+          Khám phá toàn bộ các chủ đề bài viết trên Người Đồng Hành để dễ dàng theo dõi và tra cứu tài liệu theo lĩnh vực quan tâm.
         </p>
       </section>
 
-      {/* Tags Grid */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {sortedTags.map(([tagName, count]) => (
-          <div
+          <button
             key={tagName}
+            type="button"
             onClick={() => onSelectTag(tagName)}
-            className="p-5 bg-white dark:bg-[#181B22] brutal-card brutal-card-hover cursor-pointer flex items-center justify-between group"
+            className="p-5 bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#1E293B] hover:border-[#4168E1]/60 dark:hover:border-[#5B7FF0]/60 rounded-xl text-left flex items-center justify-between gap-3 transition-colors group cursor-pointer"
           >
-            <div className="flex items-center gap-3">
-              <TagBadge tag={tagName} />
+            <div className="min-w-0">
+              <div className="text-base font-semibold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] truncate transition-colors">
+                #{tagName}
+              </div>
+              <div className="text-xs text-[#64748B] dark:text-[#94A3B8] mt-1 tabular-nums">
+                {count} bài viết
+              </div>
             </div>
-
-            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-500 group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA]">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>{count} bài</span>
-            </div>
-          </div>
+            <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] shrink-0 transition-colors" />
+          </button>
         ))}
       </section>
     </div>

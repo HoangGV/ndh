@@ -21,7 +21,6 @@ export default function App() {
     return window.location.pathname || '/';
   });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedTagFilter, setSelectedTagFilter] = useState<string | undefined>(undefined);
 
   // Initialize theme from localStorage (Mặc định Light Mode)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -60,7 +59,7 @@ export default function App() {
   // Global keyboard shortcut for search (Ctrl+K or Cmd+K)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen(true);
       }
@@ -70,8 +69,10 @@ export default function App() {
   }, []);
 
   const navigateTo = (path: string) => {
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    if (path !== currentPath) {
+      window.history.pushState({}, '', path);
+      setCurrentPath(path);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -104,12 +105,21 @@ export default function App() {
       ogTitle = `Tags và chủ đề bài viết - ${siteName}`;
       description =
         'Khám phá toàn bộ chủ đề bài viết, phương pháp dạy học hiện đại và công cụ số tại Người Đồng Hành.';
+    } else if (normalizedPath.startsWith('/tag/')) {
+      const tagName = decodeURIComponent(normalizedPath.replace('/tag/', ''));
+      pageTitle = `#${tagName} - ${siteName}`;
+      ogTitle = `Chủ đề: ${tagName} - ${siteName}`;
+      description = `Danh sách bài viết thuộc chủ đề ${tagName} trên Người Đồng Hành.`;
     } else if (normalizedPath === '/gioi-thieu') {
       pageTitle = `Giới thiệu - ${siteName}`;
       ogTitle = `Giới thiệu - ${siteName}`;
       description =
         'Tìm hiểu về Hoàng Lam và hệ sinh thái Người Đồng Hành – không gian chia sẻ tài liệu, phương pháp dạy học và công cụ miễn phí.';
-    } else if (normalizedPath !== '/' && !normalizedPath.startsWith('/tag/') && !normalizedPath.startsWith('/tool/')) {
+    } else if (
+      normalizedPath !== '/' &&
+      !normalizedPath.startsWith('/tag/') &&
+      !normalizedPath.startsWith('/tool/')
+    ) {
       const slug = normalizedPath.replace(/^\//, '');
       const matchedPost = POSTS.find((p) => p.slug === slug);
       if (matchedPost) {
@@ -152,12 +162,7 @@ export default function App() {
   const renderView = () => {
     // 1. Home / Articles
     if (normalizedPath === '/' || normalizedPath === '') {
-      return (
-        <HomeView
-          onNavigate={navigateTo}
-          selectedTagFilter={selectedTagFilter}
-        />
-      );
+      return <HomeView onNavigate={navigateTo} />;
     }
 
     // 2. Tag Pages
@@ -166,8 +171,7 @@ export default function App() {
         <TagsView
           onNavigate={navigateTo}
           onSelectTag={(tag) => {
-            setSelectedTagFilter(tag);
-            navigateTo('/');
+            navigateTo(`/tag/${encodeURIComponent(tag)}`);
           }}
         />
       );
@@ -175,12 +179,7 @@ export default function App() {
 
     if (normalizedPath.startsWith('/tag/')) {
       const tagName = decodeURIComponent(normalizedPath.replace('/tag/', ''));
-      return (
-        <HomeView
-          onNavigate={navigateTo}
-          selectedTagFilter={tagName}
-        />
-      );
+      return <HomeView onNavigate={navigateTo} selectedTagFilter={tagName} />;
     }
 
     // 3. Tools Directory
@@ -199,7 +198,7 @@ export default function App() {
       return <AboutView onNavigate={navigateTo} />;
     }
 
-    // 6. Direct Root Article Post Slugs (e.g., /xay-dung-static-site-astro-github-pages)
+    // 6. Direct Root Article Post Slugs
     const rawSlug = normalizedPath.replace(/^\//, '');
     const matchedPost = POSTS.find((p) => p.slug === rawSlug);
 
@@ -217,16 +216,16 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAFAF5] text-[#111111] dark:bg-[#0F1115] dark:text-[#F3F4F6] transition-colors w-full max-w-full overflow-x-clip">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-[#0F172A] dark:bg-[#0B1120] dark:text-[#F8FAFC] transition-colors duration-200 w-full max-w-full overflow-x-clip">
       <Header
-        currentPath={currentPath}
+        currentPath={normalizedPath}
         onNavigate={navigateTo}
         onOpenSearch={() => setIsSearchOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
 
-      <main className="flex-grow max-w-6xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-clip">
+      <main className="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 overflow-x-clip">
         {renderView()}
       </main>
 

@@ -4,22 +4,34 @@
 
 @layer base {
   :root {
-    --color-primary: #4169E1;
-    --color-yellow: #FFD93D;
-    --color-pink: #FF6B9D;
-    --color-mint: #4ADE80;
-    --color-orange: #FF9F43;
-    --color-ink: #111111;
+    --color-bg: #F8FAFC;
+    --color-surface: #FFFFFF;
+    --color-border: #E2E8F0;
+    --color-text: #0F172A;
+    --color-text-muted: #64748B;
+    --color-accent: #4168E1;
+    --color-accent-hover: #3154C4;
+  }
+
+  .dark {
+    --color-bg: #0B1120;
+    --color-surface: #111827;
+    --color-border: #1E293B;
+    --color-text: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    --color-accent: #5B7FF0;
+    --color-accent-hover: #7695F5;
   }
 
   html {
     overflow-x: clip;
     max-width: 100%;
     width: 100%;
+    background-color: var(--color-bg);
+    color: var(--color-text);
   }
 
   body {
-    font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     overflow-x: clip;
     max-width: 100%;
     width: 100%;
@@ -34,17 +46,146 @@
     width: 100%;
   }
 
-  code, pre {
-    font-family: 'JetBrains Mono', monospace;
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 }
 
-/* Fix mobile responsive overflow for math, tables and code */
+/* Editorial Markdown Prose Styling */
+.editorial-prose {
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.editorial-prose > *:first-child {
+  margin-top: 0;
+}
+
+.editorial-prose > *:last-child {
+  margin-bottom: 0;
+}
+
+.editorial-prose h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin-top: 2.25rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  text-wrap: balance;
+}
+
+.editorial-prose h2 {
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-text);
+  scroll-margin-top: 5rem;
+  text-wrap: balance;
+}
+
+.editorial-prose h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  scroll-margin-top: 5rem;
+}
+
+.editorial-prose p {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.editorial-prose a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  transition: color 150ms ease;
+}
+
+.editorial-prose a:hover {
+  color: var(--color-accent-hover);
+}
+
+.editorial-prose strong {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.editorial-prose ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.editorial-prose ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.editorial-prose li {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.editorial-prose blockquote {
+  margin: 1.75rem 0;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.editorial-prose hr {
+  border: 0;
+  border-top: 1px solid var(--color-border);
+  margin: 2rem 0;
+}
+
+.editorial-prose :not(pre) > code {
+  font-size: 0.875em;
+  padding: 0.15rem 0.375rem;
+  border-radius: 0.375rem;
+  background-color: #F1F5F9;
+  color: #0F172A;
+  border: 1px solid #E2E8F0;
+}
+
+.dark .editorial-prose :not(pre) > code {
+  background-color: #1E293B;
+  color: #F8FAFC;
+  border-color: #334155;
+}
+
+.editorial-prose img {
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive KaTeX & Code Scrolling */
 .katex-display {
-  overflow-x: auto !important;
-  overflow-y: hidden !important;
-  max-width: 100% !important;
-  padding: 4px 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 0.25rem 0;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -52,106 +193,16 @@
   max-width: 100%;
 }
 
-.katex-html {
+pre {
   max-width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
-}
-
-pre {
-  max-width: 100% !important;
-  overflow-x: auto !important;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Neo-Brutalism Shadows & Animations */
-.brutal-border {
-  border: 2.5px solid #111111;
-}
-.dark .brutal-border {
-  border: 2.5px solid #E2E8F0;
-}
-
-.brutal-card {
-  border: 2.5px solid #111111;
-  box-shadow: 4px 4px 0px #111111;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.dark .brutal-card {
-  border: 2.5px solid #E2E8F0;
-  box-shadow: 4px 4px 0px #60A5FA;
-}
-
-.brutal-card-hover:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #111111;
-}
-.dark .brutal-card-hover:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #93C5FD;
-}
-
-.brutal-btn {
-  border: 2.5px solid #111111;
-  box-shadow: 3px 3px 0px #111111;
-  font-weight: 700;
-  transition: all 0.12s ease-in-out;
-}
-.dark .brutal-btn {
-  border: 2.5px solid #E2E8F0;
-  box-shadow: 3px 3px 0px #60A5FA;
-}
-
-.brutal-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #111111;
-}
-.dark .brutal-btn:hover {
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #93C5FD;
-}
-
-.brutal-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #111111;
-}
-.dark .brutal-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0px #60A5FA;
-}
-
-.brutal-tag {
-  display: inline-flex;
-  align-items: center;
-  font-weight: 700;
-  font-size: 0.75rem;
-  padding: 0.2rem 0.55rem;
-  border: 2px solid #111111;
-  box-shadow: 2px 2px 0px #111111;
-}
-.dark .brutal-tag {
-  border: 2px solid #E2E8F0;
-  box-shadow: 2px 2px 0px #60A5FA;
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: #F1F1E8;
-  border-left: 2px solid #111111;
-}
-.dark ::-webkit-scrollbar-track {
-  background: #181B22;
-  border-left: 2px solid #334155;
-}
-::-webkit-scrollbar-thumb {
-  background: #4169E1;
-  border: 2px solid #111111;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #60A5FA;
-  border: 2px solid #E2E8F0;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms;
+    transition-duration: 0.01ms;
+    scroll-behavior: auto;
+  }
 }

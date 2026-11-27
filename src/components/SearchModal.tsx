@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, BookOpen, Wrench, ArrowRight, CornerDownLeft } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Search, X, ArrowRight, FileText, Wrench } from 'lucide-react';
 import { POSTS } from '../data/posts';
 import { TOOLS } from '../data/tools';
 
@@ -17,18 +17,24 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const suggestedTags = useMemo(() => {
+    const postTags = Array.from(new Set(POSTS.flatMap((p) => p.tags)));
+    return postTags.slice(0, 6);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
-      }, 50);
+      }, 40);
+      return () => clearTimeout(timer);
     } else {
       setQuery('');
     }
   }, [isOpen]);
 
-  // Handle ESC key
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
@@ -36,7 +42,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -61,150 +67,165 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       )
     : [];
 
-  const handleSelect = (path: string) => {
-    onNavigate(path);
+  const handleSelect = (path: string, isExternal = false) => {
     onClose();
+    if (isExternal) {
+      window.open(path, '_blank', 'noopener,noreferrer');
+    } else {
+      onNavigate(path);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/60 backdrop-blur-xs">
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-[#0F172A]/45 dark:bg-black/65 backdrop-blur-xs"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Tìm kiếm bài viết và công cụ"
+    >
       <div
-        className="w-full max-w-2xl bg-white dark:bg-[#181B22] border-[3px] border-[#111111] dark:border-[#E2E8F0] shadow-[8px_8px_0_#111111] dark:shadow-[8px_8px_0_#60A5FA] overflow-hidden animate-in fade-in zoom-in-95 duration-150"
+        className="w-full max-w-2xl bg-white dark:bg-[#111827] border border-[#E2E8F0] dark:border-[#334155] rounded-xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Search Input Bar */}
-        <div className="relative border-b-[2.5px] border-[#111111] dark:border-[#E2E8F0] flex items-center bg-[#FAFAF5] dark:bg-[#12151C] px-4 py-3">
-          <Search className="w-5 h-5 text-[#4169E1] dark:text-[#60A5FA] shrink-0" />
+        {/* Search Input */}
+        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#E2E8F0] dark:border-[#1E293B]">
+          <Search className="w-5 h-5 text-[#64748B] dark:text-[#94A3B8] shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Tìm kiếm bài viết, công cụ, chủ đề (ví dụ: Astro, Pomodoro, Second Brain)..."
-            className="w-full px-3 py-1 bg-transparent text-sm sm:text-base font-semibold outline-hidden placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            placeholder="Tìm kiếm bài viết, chủ đề hoặc công cụ..."
+            className="w-full bg-transparent text-sm sm:text-base text-[#0F172A] dark:text-[#F8FAFC] placeholder:text-[#64748B] dark:placeholder:text-[#94A3B8] outline-hidden"
           />
           {query && (
             <button
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 hover:bg-black/10 rounded mr-2 text-gray-500"
+              className="p-1 text-[#64748B] hover:text-[#0F172A] dark:text-[#94A3B8] dark:hover:text-[#F8FAFC] transition-colors cursor-pointer"
+              aria-label="Xóa từ khóa"
             >
               <X className="w-4 h-4" />
             </button>
           )}
           <button
+            type="button"
             onClick={onClose}
-            className="px-2 py-0.5 text-xs font-bold bg-[#FF6B9D] text-black border border-black shadow-[1.5px_1.5px_0_#111] hover:translate-x-[-1px] hover:translate-y-[-1px]"
+            className="px-2 py-1 text-xs font-medium text-[#64748B] dark:text-[#94A3B8] border border-[#E2E8F0] dark:border-[#334155] rounded-md hover:text-[#0F172A] dark:hover:text-[#F8FAFC] transition-colors cursor-pointer"
           >
             ESC
           </button>
         </div>
 
-        {/* Results Container */}
-        <div className="max-h-[60vh] overflow-y-auto p-4 space-y-4">
-          {!query && (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <p className="text-sm font-semibold mb-2">
-                🔎 Tìm kiếm tĩnh phía client (Tương đương Pagefind)
+        {/* Results */}
+        <div className="max-h-[60vh] overflow-y-auto divide-y divide-[#E2E8F0] dark:divide-[#1E293B]">
+          {!normalizedQuery && (
+            <div className="p-6 text-center space-y-4">
+              <p className="text-sm text-[#64748B] dark:text-[#94A3B8]">
+                Nhập từ khóa để tìm nhanh trong toàn bộ bài viết và công cụ học tập.
               </p>
-              <div className="flex flex-wrap justify-center gap-2 mt-3">
-                {['Astro', 'Pomodoro', 'Neo-Brutalism', 'Lập trình', 'Lighthouse'].map((k) => (
+              {suggestedTags.length > 0 && (
+                <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
+                  <span className="text-[#64748B] dark:text-[#94A3B8]">Gợi ý:</span>
+                  {suggestedTags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => setQuery(tag)}
+                      className="font-medium text-[#4168E1] dark:text-[#5B7FF0] hover:underline underline-offset-4 cursor-pointer"
+                    >
+                      #{tag}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {normalizedQuery && matchedPosts.length === 0 && matchedTools.length === 0 && (
+            <div className="p-10 text-center space-y-1.5">
+              <p className="text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC]">
+                Không tìm thấy kết quả cho “{query}”
+              </p>
+              <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+                Hãy thử từ khóa ngắn hơn hoặc kiểm tra lại chính tả.
+              </p>
+            </div>
+          )}
+
+          {matchedPosts.length > 0 && (
+            <div className="p-3">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#64748B] dark:text-[#94A3B8]">
+                <FileText className="w-3.5 h-3.5" />
+                <span className="tabular-nums">Bài viết ({matchedPosts.length})</span>
+              </div>
+              <div className="mt-1 space-y-0.5">
+                {matchedPosts.map((post) => (
                   <button
-                    key={k}
-                    onClick={() => setQuery(k)}
-                    className="px-2.5 py-1 text-xs font-bold bg-white dark:bg-[#202530] border border-black dark:border-white/30 shadow-[2px_2px_0_#111] hover:bg-[#FFD93D] hover:text-black transition-colors"
+                    key={post.slug}
+                    type="button"
+                    onClick={() => handleSelect(`/${post.slug}`)}
+                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/60 transition-colors flex items-center justify-between gap-3 group cursor-pointer"
                   >
-                    #{k}
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] line-clamp-1 transition-colors">
+                        {post.title}
+                      </div>
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8] line-clamp-1 mt-0.5">
+                        {post.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-[#64748B] dark:text-[#94A3B8] tabular-nums">
+                        <span>{post.pubDate}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>{post.readingTimeMinutes} phút đọc</span>
+                      </div>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] shrink-0 transition-colors" />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {query && matchedPosts.length === 0 && matchedTools.length === 0 && (
-            <div className="text-center py-10 text-gray-500">
-              <p className="font-bold text-base">Không tìm thấy kết quả phù hợp với "{query}"</p>
-              <p className="text-xs mt-1">Hãy thử với từ khóa khác hoặc kiểm tra lại chính tả.</p>
-            </div>
-          )}
-
-          {/* Matched Tools */}
           {matchedTools.length > 0 && (
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#4169E1] dark:text-[#60A5FA] mb-2">
+            <div className="p-3">
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-[#64748B] dark:text-[#94A3B8]">
                 <Wrench className="w-3.5 h-3.5" />
-                <span>Công cụ ({matchedTools.length})</span>
+                <span className="tabular-nums">Công cụ ({matchedTools.length})</span>
               </div>
-              <div className="space-y-2">
+              <div className="mt-1 space-y-0.5">
                 {matchedTools.map((tool) => (
-                  <div
+                  <button
                     key={tool.id}
+                    type="button"
                     onClick={() =>
-                      handleSelect(tool.type === 'external' ? tool.url : `/tool/${tool.slug}`)
+                      handleSelect(
+                        tool.type === 'external' ? tool.url : `/tool/${tool.slug}`,
+                        tool.type === 'external'
+                      )
                     }
-                    className="p-3 bg-[#FAFAF5] dark:bg-[#141820] border-2 border-[#111111] dark:border-white/20 shadow-[2px_2px_0_#111] hover:border-[#4169E1] cursor-pointer transition-all flex items-center justify-between group"
+                    className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-[#F8FAFC] dark:hover:bg-[#1E293B]/60 transition-colors flex items-center justify-between gap-3 group cursor-pointer"
                   >
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-black dark:text-white group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA]">
+                        <span className="text-sm font-semibold text-[#0F172A] dark:text-[#F8FAFC] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] truncate transition-colors">
                           {tool.name}
                         </span>
-                        <span className="text-[10px] font-extrabold px-1.5 py-0.2 bg-[#FFD93D] text-black border border-black">
+                        <span className="text-xs text-[#4168E1] dark:text-[#5B7FF0] shrink-0">
                           {tool.category}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1 mt-0.5">
+                      <p className="text-xs text-[#64748B] dark:text-[#94A3B8] line-clamp-1 mt-0.5">
                         {tool.description}
                       </p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-[#4169E1] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
-                  </div>
+                    <ArrowRight className="w-4 h-4 text-[#94A3B8] group-hover:text-[#4168E1] dark:group-hover:text-[#5B7FF0] shrink-0 transition-colors" />
+                  </button>
                 ))}
               </div>
             </div>
           )}
-
-          {/* Matched Posts */}
-          {matchedPosts.length > 0 && (
-            <div>
-              <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[#FF6B9D] mb-2">
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Bài viết ({matchedPosts.length})</span>
-              </div>
-              <div className="space-y-2">
-                {matchedPosts.map((post) => (
-                  <div
-                    key={post.slug}
-                    onClick={() => handleSelect(`/${post.slug}`)}
-                    className="p-3 bg-white dark:bg-[#141820] border-2 border-[#111111] dark:border-white/20 shadow-[2px_2px_0_#111] hover:border-[#FF6B9D] cursor-pointer transition-all flex items-center justify-between group"
-                  >
-                    <div>
-                      <span className="font-bold text-sm text-black dark:text-white group-hover:text-[#4169E1] dark:group-hover:text-[#60A5FA]">
-                        {post.title}
-                      </span>
-                      <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-1 mt-0.5">
-                        {post.description}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-gray-500">
-                        <span>{post.pubDate}</span>
-                        <span>·</span>
-                        <span>{post.readingTimeMinutes} phút đọc</span>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-[#FF6B9D] group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Modal Footer Info */}
-        <div className="px-4 py-2.5 bg-gray-100 dark:bg-[#12151C] border-t-2 border-black dark:border-white/10 flex items-center justify-between text-[11px] font-semibold text-gray-500">
-          <div className="flex items-center gap-1">
-            <CornerDownLeft className="w-3 h-3" />
-            <span>Nhấn Enter hoặc click để mở trang</span>
-          </div>
-          <div>Pagefind Static Index Simulator</div>
         </div>
       </div>
     </div>
